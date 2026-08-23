@@ -1,0 +1,9 @@
+/* モジュール側にはTailwindで書きにくい特殊なスタイルだけを書く */
+.customGlow {
+  box-shadow: 0 0 15px rgba(200, 22, 29, 0.2);
+}
+
+/* 検索バーのカスタムアニメーション等の例 */
+.searchInput:focus {
+  outline: none;
+}

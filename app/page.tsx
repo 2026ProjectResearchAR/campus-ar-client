@@ -1,64 +1,86 @@
-import Image from "next/image";
+import Link from 'next/link';
+// モジュールも一緒に読み込む
+import styles from './page.module.css';
 
-export default function Home() {
+export default function HomePage() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    // w-full max-w-[430px]: 幅100%かつ最大430px
+    // mx-auto: 左右中央揃え (margin: 0 auto)
+    // min-h-screen: 画面の高さいっぱい
+    <div className="w-full max-w-[430px] mx-auto min-h-screen bg-white font-sans text-gray-800 pb-10">
+      
+      {/* 1. ヘッダー */}
+      {/* flex justify-between items-center: 左右に振り分けて上下中央 */}
+      <header className="flex justify-between items-center px-4 py-3 border-b border-gray-100">
+        <div className="flex items-center gap-2">
+          {/* w-6 h-6: 24px × 24px */}
+          <div className="w-6 h-6 bg-[#c8161d] rounded-full flex items-center justify-center text-white text-xs font-bold">
+            R
+          </div>
+          <span className="text-[11px] font-bold text-[#c8161d] tracking-tight">
+            知能情報メディア課程 研究室ガイド
+          </span>
+        </div>
+        {/* ハンバーガーメニュー */}
+        <button className="text-[#c8161d] text-xl p-1">☰</button>
+      </header>
+
+      {/* 2. メインコンテンツ */}
+      <main className="px-4 pt-4">
+        
+        {/* キャッチコピー */}
+        <div className="text-left mb-4">
+          <h1 className="text-2xl font-extrabold leading-snug tracking-tight text-gray-900">
+            <span className="text-[#c8161d] text-3xl">i</span>nnovationを<br />
+            巻き起こせ
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+        </div>
+
+        {/* キャンパス画像エリア */}
+        {/* overflow-hidden: 画像の角を丸めるため */}
+        <div className="w-full h-44 rounded-lg overflow-hidden mb-5 bg-gray-100 flex items-center justify-center border border-gray-200">
+          <span className="text-xs text-gray-400">[ キャンパス画像: 100% × auto ]</span>
+        </div>
+
+        {/* 検索バー */}
+        {/* shadow-md: 影をつける */}
+        <div className="flex items-center bg-white rounded-full px-4 py-1.5 shadow-md border border-gray-100 mb-6">
+          <input 
+            type="text" 
+            placeholder="教授名・研究分野を検索" 
+            className={`w-full text-xs text-gray-700 bg-transparent border-none ${styles.searchInput}`}
+          />
+          <button className="bg-[#c8161d] text-white rounded-full w-7 h-7 flex items-center justify-center text-xs shrink-0 ml-2">
+            🔍
+          </button>
+        </div>
+
+        {/* 赤いメインボタン（Tailwind + モジュールの併用例） */}
+        {/* `${styles.customGlow}` でモジュールの影を追加 */}
+        <Link 
+          href="/map" 
+          className={`bg-[#c8161d] text-white rounded-2xl p-3.5 flex items-center gap-3 no-underline active:scale-[0.98] transition-transform ${styles.customGlow}`}
+        >
+          {/* 白丸アイコン背景 */}
+          <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-lg shrink-0">
+            📍
+          </div>
+          <div className="text-left" >
+            <div className="font-bold text-sm leading-tight">キャンパスマップを見る</div>
+            <div className="text-[10px] opacity-90 font-normal">研究室の場所を確認できます</div>
+          </div>
+        </Link>
+
+        {/* 下部案内カード */}
+        <div className="bg-[#fff5f5] border border-[#ffe0e0] rounded-xl p-4 mt-5 text-left">
+          <div className="text-[#c8161d] font-bold text-xs mb-1.5 flex items-center gap-1">
+            オープンキャンパス開催中！
+          </div>
+          <p className="text-[11px] text-gray-600 leading-relaxed margin-0">
+            研究室前のマーカーにスマホの背面をタッチすると研究室ごとの情報が表示されます✨
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+
       </main>
     </div>
   );
