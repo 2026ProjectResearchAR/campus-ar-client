@@ -58,7 +58,7 @@ export default function HomePage() {
         {/* 赤いメインボタン（Tailwind + モジュールの併用例） */}
         {/* `${styles.customGlow}` でモジュールの影を追加 */}
         <Link 
-          href="/map" 
+          href="screen/map" 
           className={`bg-[#c8161d] text-white rounded-2xl p-3.5 flex items-center gap-3 no-underline active:scale-[0.98] transition-transform ${styles.customGlow}`}
         >
           {/* 白丸アイコン背景 */}
