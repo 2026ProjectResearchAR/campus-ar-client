@@ -84,8 +84,6 @@ export default function MyPage() {
                 </div>
             </main>
 
-            {/* 5. 共通タブバー */}
-            <TabBar />
         </div>
     )
 }

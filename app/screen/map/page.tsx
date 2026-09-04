@@ -51,10 +51,6 @@ export default function MapPage() {
                     [ ここに地図とピンが入ります]
                 </div>
             </main>
-
-            {/* 作っておいた共通タブバーを置く */}
-            <TabBar />
-
         </div>
     )
 }

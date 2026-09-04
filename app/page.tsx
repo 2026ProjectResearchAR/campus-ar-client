@@ -1,6 +1,9 @@
 import Link from 'next/link';
 // モジュールも一緒に読み込む
 import styles from './page.module.css';
+import { FaSearch } from "react-icons/fa";
+import { LuMapPin } from "react-icons/lu";
+
 
 export default function HomePage() {
   return (
@@ -8,25 +11,9 @@ export default function HomePage() {
     // mx-auto: 左右中央揃え (margin: 0 auto)
     // min-h-screen: 画面の高さいっぱい
     <div className="w-full max-w-[430px] mx-auto min-h-screen bg-white font-sans text-gray-800 pb-10">
-      
-      {/* 1. ヘッダー */}
-      {/* flex justify-between items-center: 左右に振り分けて上下中央 */}
-      <header className="flex justify-between items-center px-4 py-3 border-b border-gray-100">
-        <div className="flex items-center gap-2">
-          {/* w-6 h-6: 24px × 24px */}
-          <div className="w-6 h-6 bg-[#c8161d] rounded-full flex items-center justify-center text-white text-xs font-bold">
-            R
-          </div>
-          <span className="text-[11px] font-bold text-[#c8161d] tracking-tight">
-            知能情報メディア課程 研究室ガイド
-          </span>
-        </div>
-        {/* ハンバーガーメニュー */}
-        <button className="text-[#c8161d] text-xl p-1">☰</button>
-      </header>
 
       {/* 2. メインコンテンツ */}
-      <main className="px-4 pt-4">
+      <main className="px-4">
         
         {/* キャッチコピー */}
         <div className="text-left mb-4">
@@ -51,7 +38,7 @@ export default function HomePage() {
             className={`w-full text-xs text-gray-700 bg-transparent border-none ${styles.searchInput}`}
           />
           <button className="bg-[#c8161d] text-white rounded-full w-7 h-7 flex items-center justify-center text-xs shrink-0 ml-2">
-            🔍
+            <FaSearch />
           </button>
         </div>
 
@@ -59,15 +46,15 @@ export default function HomePage() {
         {/* `${styles.customGlow}` でモジュールの影を追加 */}
         <Link 
           href="screen/map" 
-          className={`bg-[#c8161d] text-white rounded-2xl p-3.5 flex items-center gap-3 no-underline active:scale-[0.98] transition-transform ${styles.customGlow}`}
+          className={`bg-[#c8161d] text-white rounded-2xl px-4 py-0 flex items-center gap-3 no-underline active:scale-[0.98] transition-transform ${styles.customGlow}`}
         >
           {/* 白丸アイコン背景 */}
-          <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-lg shrink-0">
-            📍
+          <div className="h-10 w-auto p-0 m-0 flex items-center justify-center text-lg shrink-0">
+            <LuMapPin className="h-full w-auto" />
           </div>
-          <div className="text-left" >
-            <div className="font-bold text-sm leading-tight">キャンパスマップを見る</div>
-            <div className="text-[10px] opacity-90 font-normal">研究室の場所を確認できます</div>
+          <div className="text-left py-3" >
+            <div className="font-bold text-sm leading-tight py-1">キャンパスマップを見る</div>
+            <div className="text-[10px] opacity-90 font-normal flex justify-center">研究室の場所を確認できます</div>
           </div>
         </Link>
 
