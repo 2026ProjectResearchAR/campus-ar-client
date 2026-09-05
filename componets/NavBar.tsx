@@ -1,11 +1,15 @@
 import { IoIosMenu } from "react-icons/io";
 
-export default function NavBar() {
+type NavBarProps = {
+    bgColor?: string;
+}
+
+export default function NavBar(props: NavBarProps) {
     return (
-        <div className="w-full max-w-[430px] mx-auto bg-white font-sans text-gray-800 pb-3">
+        <div className={`w-full max-w-[430px] mx-auto font-san border-b border-gray-100 text-gray-800 pb-3 ${props.bgColor || 'bg-white'}`}>
             {/* 1. ヘッダー */}
             {/* flex justify-between items-center: 左右に振り分けて上下中央 */}
-            <header className="flex justify-between items-center px-4 pt-3 border-b border-gray-100">
+            <header className="flex justify-between items-center px-4 pt-3">
             <div className="flex items-center gap-2">
                 {/* w-6 h-6: 24px × 24px */}
                 <div className="w-6 h-6 flex items-center justify-center text-white text-xs font-bold">
