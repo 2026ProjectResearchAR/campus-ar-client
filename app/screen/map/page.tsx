@@ -1,49 +1,48 @@
-// @.componets/TabBar で作っておいた共通タブバーを読み込む
-import TabBar from '@/componets/TabBar';
+"use client";
+import { useState } from "react";
+import { FiSearch } from "react-icons/fi";
+
 
 export default function MapPage() {
-    // マーカー取得数（テスト用に定数で設定）
-    const TOTAL_MARKERS = 12;
-    const collectedMarkers = 8;
+    
+    {/* それぞれの選択肢の状態 */}
+    const [selectedOption, setSelectedOption] = useState<string | null>("すべて");
+    const categories = ["すべて", "研究室", "自習室", "トイレ", "カフェ", "その他"];
 
-    // 取得率（％）計算
-    const progressPercentage = Math.min(
-        100,
-        Math.max(0, (collectedMarkers / TOTAL_MARKERS) * 100)
-    )
+    const handleOptionClick = (option: string) => {
+        if (selectedOption === option) {
+            setSelectedOption(null);
+        } else {
+            setSelectedOption(option);
+        }
+    }
+
     return (
         // ph-24 でタブバートコンテンツが被らないように下に隙間を作る
         <div className="relative w-full max-w-[430px] mx-auto min-h-screen font-sans pb-24">
-
-            {/* マップ画面の仮ヘッダー */}
-            <header className="px-5 pt-4  pb-3 bg-white border-b border-gray-100 sticky top-0 z-10 shadow-sm">
-                {/* 上部の時刻とアイコン */}
-                <div>
-                    <span className="text-xs font-bold text-gray-500">9:41</span>
-                    <div className="flex gap-2 text-xs text-gray-400">
-                        <span>?</span><span>?</span><span>?</span>
-                    </div>
+            <div className="w-full h-25 bg-[#FFF8F6]">
+                {/* 検索バー */}
+                <div className="flex items-center gap-2 px-3 py-2 mx-6 bg-white rounded-full shadow-lg">
+                    <FiSearch />
+                    <input type="" placeholder="検索" className="w-full focus:outline-none"></input>
                 </div>
-
-                {/* マーカーカウンター */}
-                <div className="flex justify-between items-end mb-1.5">
-                    <span className="text-xs font-bold text-gray-700">マーカー</span>
-                    <div className="text-xs font-bold text-gray-400">
-                        <span className="text-[#c8161d] text-base font-extrabold mr-0.5">
-                            {collectedMarkers}
-                        </span>
-                        / {TOTAL_MARKERS}
-                    </div>
+                {/* フィルターボタンエリア */}
+                 <div className="my-4 px-3 flex justify-between gap-4 overflow-x-auto flex-nowrap">
+                    {categories.map((option) => (
+                        <button 
+                            className={`px-4 rounded-full shadow-lg border shrink-0 ${
+                                selectedOption === option 
+                                    ? "bg-blue-500 text-white border-blue-500" 
+                                    : "bg-white text-black border-gray-100 hover:bg-gray-200"
+                            } transition-colors`}
+                            onClick={() => handleOptionClick(option)}
+                        >
+                            {option}
+                        </button>
+                    ))}
                 </div>
-
-                {/* 動的プログレスバー背景 */}
-                <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
-                    {/* 中身の赤いバー:styleで直接width(%)を設定 */}
-                    <div className="h-full bg-[#c8161d] routded-full transition-all duration-500 ease-out" 
-                    style={{ width: `${progressPercentage}%` }}>
-                    </div>
-                </div>
-            </header>
+            </div>
+           
 
             {/* メインマップエリア */}
             <main className="p-4">
