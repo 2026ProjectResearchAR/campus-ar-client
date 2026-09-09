@@ -1,108 +1,72 @@
-import { IoIosArrowForward } from "react-icons/io";
-import { FiAward } from "react-icons/fi";
-import { LuShield } from "react-icons/lu";
-import { FaRegHeart } from "react-icons/fa";
-import { PiNotePencil } from "react-icons/pi";
-import { MdEventNote } from "react-icons/md";
-import { CiSettings } from "react-icons/ci";
+import {
+  LuAward,
+  LuCalendar,
+  LuChevronRight,
+  LuHeart,
+  LuSettings,
+  LuShield,
+  LuSquarePen,
+} from "react-icons/lu";
+
+/**
+ * マイページ (ui.pen frame "My page")
+ *
+ * デザイン実寸 (frame 402 x 874):
+ *   - 背景の赤い楕円 : 541 x 330 / rotate 12deg / #F50000 10%
+ *   - アバター       : x=35 / y=66 / 80 x 80 / #F50000
+ *   - メニュー行     : x=26 / 348 x 50 / radius 15 / 白 + #CBD6DC の枠線
+ *   - 行内           : アイコン x=20(25px) / ラベル x=59(16px semibold)
+ */
+const MENU = [
+  { label: "スタンプコレクション", icon: <LuAward size={25} strokeWidth={1.6} /> },
+  { label: "避難ガイド・安全情報", icon: <LuShield size={25} strokeWidth={2.5} /> },
+  { label: "お気に入り", icon: <LuHeart size={25} strokeWidth={2} /> },
+  { label: "メモ", icon: <LuSquarePen size={25} strokeWidth={2} /> },
+  { label: "イベント案内", icon: <LuCalendar size={25} strokeWidth={2} /> },
+  { label: "設定", icon: <LuSettings size={25} strokeWidth={1.6} /> },
+];
 
 export default function MyPage() {
-    return (
-        /* 1. overflow-hidden を追加して、はみ出た丸を切り抜く */
-        <div className="relative w-full max-w-[430px] mx-auto min-h-screen bg-[#FFF8F6] flex-1 font-sans pb-24 overflow-hidden">
+  return (
+    // pt-[66px]: ステータスバー領域 + アバターまでの余白
+    <div className="relative flex-1 overflow-hidden pt-[66px]">
+      {/* 背景の赤い楕円 */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -left-[100px] -top-[88px] h-[330px] w-[541px] rotate-12 rounded-[50%] bg-brand/10"
+      />
 
-            {/* ▼ 2. ここに「背景のまる」を追加！ ▼ */}
-            <div className="absolute top-[-180px] left-1/2 -translate-x-1/2 w-[600px] h-[360px] rounded-b-[100%] bg-[#FFE3E1] pointer-events-none" />
-
-            {/* 3. 前面のメインコンテンツ（relative z-10 で丸より前に出す） */}
-            <main className="relative z-10 p-4 space-y-4">
-                {/*2. ユーザープロフィールカード */}
-                <div className=" p-4 gap-3 flex items-center justify-between mb-30">
-                    {/*赤い「G」アイコン*/}
-                    <div className="flex items-center gap-3">
-                        <span className="font-bold text-4xl text-white bg-red-500 rounded-full w-15 h-15 flex items-center justify-center">G</span>
-                        <span className="font-bold text-3xl text-black">ゲスト</span>
-                    </div>
-                </div>
-
-                {/*3. メニューリスト */}
-                <div className="w-full p-2 space-y-8">
-                    <button className="w-full px-4 py-3.5 flex items-center justify-between hover:bg-gray-50 transition-colors text-left shadow-lg rounded-xl bg-white">
-                        <div className="flex items-center gap-3">
-                            <span className="text-xl text-red-500 "><FiAward /></span>
-                            <span className="text-sm font-bold text-gray-700">スタンプコレクション</span>
-                        </div>
-                        <div>
-                            <span className="text-xl text-gray-400"><IoIosArrowForward /></span>
-                        </div>
-                    </button>
-            
-                    <button className="w-full px-4 py-3.5 flex items-center justify-between hover:bg-gray-50 transition-colors text-left shadow-lg rounded-xl bg-white">
-                        <div className="flex items-center gap-3">
-                            <span className="text-xl text-red-500 ">< LuShield /></span>
-                            <span className="text-sm font-bold text-gray-700">スタンプコレクション</span>
-                        </div>
-                        <div>
-                            <span className="text-xl text-gray-400"><IoIosArrowForward /></span>
-                        </div>
-                    </button>
-                    
-                    <button className="w-full px-4 py-3.5 flex items-center justify-between hover:bg-gray-50 transition-colors text-left shadow-lg rounded-xl bg-white">
-                        <div className="flex items-center gap-3">
-                            <span className="text-xl text-red-500 ">< FaRegHeart /></span>
-                            <span className="text-sm font-bold text-gray-700">スタンプコレクション</span>
-                        </div>
-                        <div>
-                            <span className="text-xl text-gray-400"><IoIosArrowForward /></span>
-                        </div>
-                    </button>
-
-                    <button className="w-full px-4 py-3.5 flex items-center justify-between hover:bg-gray-50 transition-colors text-left shadow-lg rounded-xl bg-white">
-                        <div className="flex items-center gap-3">
-                            <span className="text-xl text-red-500 ">< PiNotePencil /></span>
-                            <span className="text-sm font-bold text-gray-700">スタンプコレクション</span>
-                        </div>
-                        <div>
-                            <span className="text-xl text-gray-400"><IoIosArrowForward /></span>
-                        </div>
-                    </button>
-
-                    <button className="w-full px-4 py-3.5 flex items-center justify-between hover:bg-gray-50 transition-colors text-left shadow-lg rounded-xl bg-white">
-                        <div className="flex items-center gap-3">
-                            <span className="text-xl text-red-500 ">< MdEventNote /></span>
-                            <span className="text-sm font-bold text-gray-700">スタンプコレクション</span>
-                        </div>
-                        <div>
-                            <span className="text-xl text-gray-400"><IoIosArrowForward /></span>
-                        </div>
-                    </button>
-
-                    <button className="w-full px-4 py-3.5 flex items-center justify-between hover:bg-gray-50 transition-colors text-left shadow-lg rounded-xl bg-white">
-                        <div className="flex items-center gap-3">
-                            <span className="text-xl text-black "><CiSettings /></span>
-                            <span className="text-sm font-bold text-gray-700">スタンプコレクション</span>
-                        </div>
-                        <div>
-                            <span className="text-xl text-gray-400"><IoIosArrowForward /></span>
-                        </div>
-                    </button>
-                    
-
-                </div>
-
-                {/* 4. データ保管の注意書きカード */}
-                <div className="bg-blue-50/50 border border-blue-100 rounded-2xl p-4 flex gap-3 items-start">
-                    <span className="text-sm text-blue-500 mt-0.5">?</span>
-                    <div className="space-y-1">
-                        <h3 className="text-xs font-bold text-gray-800">データはブラウザに完全に保管</h3>
-                        <p className="text-[11px] text-gray-500 leading-relaxed" >
-                            スタンプや設定などのユーザーデータは、この端末のブラウザ内にのみ保存され、
-                            安全に保管されます。外部サーバーには送信されません。
-                        </p>
-                    </div>
-                </div>
-            </main>
-
+      <div className="relative">
+        {/* プロフィール */}
+        <div className="flex items-center gap-[28px] pl-[35px]">
+          <span className="flex size-20 shrink-0 items-center justify-center rounded-full bg-brand text-[40px] font-medium leading-none text-white">
+            G
+          </span>
+          <span className="text-[36px] font-medium text-black">ゲスト</span>
         </div>
-    )
+
+        {/* メニュー */}
+        <ul className="mt-[116px] space-y-7 px-[27px] pb-[140px]">
+          {MENU.map((item) => (
+            <li key={item.label}>
+              <button
+                type="button"
+                className="flex h-[50px] w-full items-center rounded-[15px] border border-hairline bg-white pl-[20px] pr-[30px] text-left shadow-card transition-colors hover:bg-gray-50"
+              >
+                <span className="shrink-0 text-ink">{item.icon}</span>
+                <span className="ml-[14px] text-[16px] font-semibold text-black">
+                  {item.label}
+                </span>
+                <LuChevronRight
+                  size={26}
+                  strokeWidth={2.5}
+                  className="ml-auto shrink-0 text-ink"
+                />
+              </button>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
 }

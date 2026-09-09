@@ -3,6 +3,7 @@ import Link from 'next/link';
 import styles from './page.module.css';
 import { FaSearch } from "react-icons/fa";
 import { LuMapPin } from "react-icons/lu";
+import NavBar from '@/componets/NavBar';
 
 
 export default function HomePage() {
@@ -10,6 +11,8 @@ export default function HomePage() {
     // w-full max-w-[430px]: 幅100%かつ最大430px
     // mx-auto: 左右中央揃え (margin: 0 auto)
     // min-h-screen: 画面の高さいっぱい
+    <>
+    <NavBar bgColor="bg-[#FFF8F6]" />
     <div className="w-full max-w-[430px] mx-auto min-h-screen bg-white font-sans text-gray-800 pb-10">
 
       {/* 2. メインコンテンツ */}
@@ -70,5 +73,6 @@ export default function HomePage() {
 
       </main>
     </div>
+    </>
   );
 }
