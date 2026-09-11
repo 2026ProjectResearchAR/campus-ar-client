@@ -10,7 +10,7 @@ export default function ScreenLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="relative mx-auto flex min-h-dvh w-full max-w-[402px] flex-col bg-canvas font-sans">
+    <div className="relative mx-auto flex min-h-dvh w-full max-w-[430px] flex-col bg-canvas font-sans">
       {children}
       <TabBar />
     </div>

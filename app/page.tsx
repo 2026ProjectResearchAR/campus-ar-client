@@ -12,7 +12,6 @@ export default function HomePage() {
     // mx-auto: 左右中央揃え (margin: 0 auto)
     // min-h-screen: 画面の高さいっぱい
     <>
-    <NavBar bgColor="bg-[#FFF8F6]" />
     <div className="w-full max-w-[430px] mx-auto min-h-screen bg-white font-sans text-gray-800 pb-10">
 
       {/* 2. メインコンテンツ */}
@@ -48,7 +47,7 @@ export default function HomePage() {
         {/* 赤いメインボタン（Tailwind + モジュールの併用例） */}
         {/* `${styles.customGlow}` でモジュールの影を追加 */}
         <Link 
-          href="screen/map" 
+          href="/screen/map" 
           className={`bg-[#c8161d] text-white rounded-2xl px-4 py-0 flex items-center gap-3 no-underline active:scale-[0.98] transition-transform ${styles.customGlow}`}
         >
           {/* 白丸アイコン背景 */}
