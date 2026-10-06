@@ -1,10 +1,25 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
 import Image from "next/image";
 import { BsFillBadgeWcFill } from "react-icons/bs";
-import { IoBookOutline, IoFlaskOutline } from "react-icons/io5";
+import {
+  IoBookOutline,
+  IoCafeOutline,
+  IoFlaskOutline,
+  IoLocationOutline,
+} from "react-icons/io5";
 import { LuSearch } from "react-icons/lu";
+import EmptyState from "@/componets/EmptyState";
+import ErrorState from "@/componets/ErrorState";
+import LoadingState from "@/componets/LoadingState";
+import {
+  fetchBuildings,
+  MAP_CATEGORIES,
+  toMapSpots,
+  type MapCategory,
+  type MapSpot,
+} from "@/lib/buildings";
 
 /**
  * マップ画面 (ui.pen frame "Map")
@@ -16,34 +31,16 @@ import { LuSearch } from "react-icons/lu";
  *   - ピン       : 52 x 24 の吹き出し + 14 x 10 の足
  *   - 現在地     : 30px / #0085CD
  */
-const spotData = [
-  {
-    id: 1,
-    name: "7号館",
-    category: "研究室",
-    mark: <IoFlaskOutline />,
-    top: "50%",
-    left: "40%",
-  },
-  {
-    id: 2,
-    name: "図書館",
-    category: "自習室",
-    mark: <IoBookOutline />,
-    top: "70%",
-    left: "60%",
-  },
-  {
-    id: 3,
-    name: "メインWC",
-    category: "トイレ",
-    mark: <BsFillBadgeWcFill />,
-    top: "20%",
-    left: "50%",
-  },
-];
+/** カテゴリごとのピンアイコン */
+const CATEGORY_MARKS: Record<MapCategory, ReactNode> = {
+  研究室: <IoFlaskOutline />,
+  自習室: <IoBookOutline />,
+  トイレ: <BsFillBadgeWcFill />,
+  カフェ: <IoCafeOutline />,
+  その他: <IoLocationOutline />,
+};
 
-const categories = ["すべて", "研究室", "自習室", "トイレ", "カフェ", "その他"];
+const categories = ["すべて", ...MAP_CATEGORIES];
 
 /** 現在地マーカー (ui.pen "Group 13") の中心座標 */
 const CURRENT_POSITION = { left: "39.9%", top: "52.3%" };
@@ -58,8 +55,36 @@ export default function MapPage() {
   }
   const [mapImageAvailable, setMapImageAvailable] = useState(true);
 
+  // buildings API から取得したピン
+  const [spots, setSpots] = useState<MapSpot[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<unknown>(null);
+  const [reloadKey, setReloadKey] = useState(0);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    fetchBuildings(controller.signal)
+      .then((buildings) => {
+        setSpots(toMapSpots(buildings));
+        setError(null);
+      })
+      .catch((e: unknown) => {
+        if (e instanceof DOMException && e.name === "AbortError") return;
+        setError(e);
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false);
+      });
+    return () => controller.abort();
+  }, [reloadKey]);
+
+  const retry = useCallback(() => {
+    setLoading(true);
+    setReloadKey((k) => k + 1);
+  }, []);
+
   // 選択されたカテゴリに応じてピンをフィルタリング
-  const filteredSpots = spotData.filter((spot) => {
+  const filteredSpots = spots.filter((spot) => {
     if (!selectedOption || selectedOption === "すべて") return true;
     return spot.category === selectedOption;
   });
@@ -128,6 +153,25 @@ export default function MapPage() {
           />
         )}
 
+        {/* 取得状態の表示 */}
+        {(loading || error != null || filteredSpots.length === 0) && (
+          <div className="absolute inset-x-4 top-4 z-10 rounded-[15px] bg-white/90 shadow-card">
+            {loading ? (
+              <LoadingState message="建物を読み込み中..." />
+            ) : error != null ? (
+              <ErrorState error={error} onRetry={retry} />
+            ) : (
+              <EmptyState
+                message={
+                  spots.length === 0
+                    ? "表示できる建物がありません"
+                    : "このカテゴリの建物はありません"
+                }
+              />
+            )}
+          </div>
+        )}
+
         {/* 画像の上に重ねるピン */}
         {filteredSpots.map((spot) => (
           <button
@@ -140,7 +184,7 @@ export default function MapPage() {
             {/* 吹き出し本体 */}
             <span className="flex h-6 min-w-[52px] items-center gap-2 rounded-[20px] border border-hairline bg-brand px-[10px] shadow-card">
               <span className="shrink-0 text-[16px] leading-none text-white">
-                {spot.mark}
+                {CATEGORY_MARKS[spot.category]}
               </span>
               <span className="whitespace-nowrap text-[12px] font-semibold text-white">
                 {spot.name}
