@@ -1,9 +1,9 @@
 import Link from 'next/link';
 // モジュールも一緒に読み込む
 import styles from './page.module.css';
-import { FaSearch } from "react-icons/fa";
 import { LuMapPin } from "react-icons/lu";
 import NavBar from '@/componets/NavBar';
+import LabSearch from '@/componets/LabSearch';
 
 
 export default function HomePage() {
@@ -31,18 +31,8 @@ export default function HomePage() {
           <span className="text-xs text-gray-400">[ キャンパス画像: 100% × auto ]</span>
         </div>
 
-        {/* 検索バー */}
-        {/* shadow-md: 影をつける */}
-        <div className="flex items-center bg-white rounded-full px-4 py-1.5 shadow-md border border-gray-100 mb-6">
-          <input 
-            type="text" 
-            placeholder="教授名・研究分野を検索" 
-            className={`w-full text-xs text-gray-700 bg-transparent border-none ${styles.searchInput}`}
-          />
-          <button className="bg-[#c8161d] text-white rounded-full w-7 h-7 flex items-center justify-center text-xs shrink-0 ml-2">
-            <FaSearch />
-          </button>
-        </div>
+        {/* 検索バー・結果 */}
+        <LabSearch />
 
         {/* 赤いメインボタン（Tailwind + モジュールの併用例） */}
         {/* `${styles.customGlow}` でモジュールの影を追加 */}
