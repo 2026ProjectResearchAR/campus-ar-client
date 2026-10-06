@@ -62,3 +62,22 @@ export function toMapSpots(buildings: Building[]): MapSpot[] {
     };
   });
 }
+
+/** 建物に属するスポット (ARマーカー) 1件分。GET /api/v1/buildings/{building_id}/spots */
+export type BuildingSpot = {
+  id: string;
+  name: string;
+  description: string | null;
+  marker_id: string;
+};
+
+export async function fetchBuildingSpots(
+  buildingId: string,
+  signal?: AbortSignal,
+): Promise<BuildingSpot[]> {
+  const res = await apiFetch<{ data: BuildingSpot[] }>(
+    `/api/v1/buildings/${encodeURIComponent(buildingId)}/spots`,
+    { signal },
+  );
+  return res.data;
+}
