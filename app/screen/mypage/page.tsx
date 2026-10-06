@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import {
   LuAward,
   LuCalendar,
@@ -25,6 +26,11 @@ const MENU = [
   { label: "イベント案内", icon: <LuCalendar size={25} strokeWidth={2} /> },
   { label: "設定", icon: <LuSettings size={25} strokeWidth={1.6} /> },
 ];
+
+export const metadata: Metadata = {
+  title: "マイページ",
+  description: "プロフィールや獲得したバッジ、お気に入りを確認できます。",
+};
 
 export default function MyPage() {
   return (

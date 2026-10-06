@@ -1,3 +1,10 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "ARスキャン",
+  description: "カメラでARマーカーを読み取り、研究室や施設の情報を表示します。",
+};
+
 export default function ScanPage() {
   return (
     <div className="relative w-full flex-1 h-full ">
