@@ -6,10 +6,27 @@
   </head>
   <body style="margin: 0; overflow: hidden;">
     <a-scene embedded arjs="sourceType: webcam;">
-      <a-marker preset="hiro">
+      <a-marker preset="hiro" data-marker-id="hiro">
         <a-box position="0 0.5 0" material="color: red;"></a-box>
       </a-marker>
       <a-entity camera></a-entity>
     </a-scene>
+    <script>
+      // マーカーを追加する場合は data-marker-id を付けた <a-marker> を増やし、
+      // 必要なら MARKER_IDS で送信用IDへ対応付ける (未指定なら data-marker-id をそのまま使う)
+      var MARKER_IDS = { hiro: "hiro-placeholder" };
+      var targetOrigin = window.location.origin;
+
+      function notify(type, el) {
+        var key = el.getAttribute("data-marker-id");
+        var markerId = MARKER_IDS[key] || key;
+        window.parent.postMessage({ type: type, markerId: markerId }, targetOrigin);
+      }
+
+      document.querySelectorAll("a-marker[data-marker-id]").forEach(function (el) {
+        el.addEventListener("markerFound", function () { notify("markerFound", el); });
+        el.addEventListener("markerLost", function () { notify("markerLost", el); });
+      });
+    </script>
   </body>
 </html>
