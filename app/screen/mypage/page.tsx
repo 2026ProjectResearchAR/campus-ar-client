@@ -26,7 +26,11 @@ const MENU: { label: string; icon: React.ReactNode; href?: string }[] = [
     icon: <LuHeart size={25} strokeWidth={2} />,
     href: "/screen/mypage/favorites",
   },
-  { label: "メモ", icon: <LuSquarePen size={25} strokeWidth={2} /> },
+  {
+    label: "メモ",
+    icon: <LuSquarePen size={25} strokeWidth={2} />,
+    href: "/screen/mypage/memos",
+  },
   { label: "イベント案内", icon: <LuCalendar size={25} strokeWidth={2} /> },
   { label: "設定", icon: <LuSettings size={25} strokeWidth={1.6} /> },
 ];
