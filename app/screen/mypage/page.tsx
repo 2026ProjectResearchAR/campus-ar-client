@@ -35,6 +35,7 @@ const MENU: MenuItem[] = [
     icon: <LuHeart size={20} strokeWidth={2} />,
     href: "/screen/mypage/favorites",
   },
+<<<<<<< HEAD
   { label: "メモ", icon: <LuSquarePen size={20} strokeWidth={2} /> },
   {
     label: "イベント案内",
@@ -46,6 +47,15 @@ const MENU: MenuItem[] = [
     icon: <LuSettings size={20} strokeWidth={2} />,
     href: "/screen/mypage/settings",
   },
+=======
+  {
+    label: "メモ",
+    icon: <LuSquarePen size={25} strokeWidth={2} />,
+    href: "/screen/mypage/memos",
+  },
+  { label: "イベント案内", icon: <LuCalendar size={25} strokeWidth={2} /> },
+  { label: "設定", icon: <LuSettings size={25} strokeWidth={1.6} /> },
+>>>>>>> d4e7334 (メモ一覧・作成・編集・削除ページを追加しマイページからリンク)
 ];
 
 export const metadata: Metadata = {
