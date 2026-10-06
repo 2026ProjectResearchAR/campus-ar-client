@@ -1,3 +1,4 @@
+import Link from "next/link";
 import {
   LuAward,
   LuCalendar,
@@ -17,14 +18,21 @@ import {
  *   - メニュー行     : x=26 / 348 x 50 / radius 15 / 白 + #CBD6DC の枠線
  *   - 行内           : アイコン x=20(25px) / ラベル x=59(16px semibold)
  */
-const MENU = [
+const MENU: { label: string; icon: React.ReactNode; href?: string }[] = [
   { label: "スタンプコレクション", icon: <LuAward size={25} strokeWidth={1.6} /> },
   { label: "避難ガイド・安全情報", icon: <LuShield size={25} strokeWidth={2.5} /> },
-  { label: "お気に入り", icon: <LuHeart size={25} strokeWidth={2} /> },
+  {
+    label: "お気に入り",
+    icon: <LuHeart size={25} strokeWidth={2} />,
+    href: "/screen/mypage/favorites",
+  },
   { label: "メモ", icon: <LuSquarePen size={25} strokeWidth={2} /> },
   { label: "イベント案内", icon: <LuCalendar size={25} strokeWidth={2} /> },
   { label: "設定", icon: <LuSettings size={25} strokeWidth={1.6} /> },
 ];
+
+const ROW_CLASS =
+  "flex h-[50px] w-full items-center rounded-[15px] border border-hairline bg-white pl-[20px] pr-[30px] text-left shadow-card transition-colors hover:bg-gray-50";
 
 export default function MyPage() {
   return (
@@ -47,12 +55,9 @@ export default function MyPage() {
 
         {/* メニュー */}
         <ul className="mt-[116px] space-y-7 px-[27px] pb-[140px]">
-          {MENU.map((item) => (
-            <li key={item.label}>
-              <button
-                type="button"
-                className="flex h-[50px] w-full items-center rounded-[15px] border border-hairline bg-white pl-[20px] pr-[30px] text-left shadow-card transition-colors hover:bg-gray-50"
-              >
+          {MENU.map((item) => {
+            const content = (
+              <>
                 <span className="shrink-0 text-ink">{item.icon}</span>
                 <span className="ml-[14px] text-[16px] font-semibold text-black">
                   {item.label}
@@ -62,9 +67,22 @@ export default function MyPage() {
                   strokeWidth={2.5}
                   className="ml-auto shrink-0 text-ink"
                 />
-              </button>
-            </li>
-          ))}
+              </>
+            );
+            return (
+              <li key={item.label}>
+                {item.href ? (
+                  <Link href={item.href} className={ROW_CLASS}>
+                    {content}
+                  </Link>
+                ) : (
+                  <button type="button" className={ROW_CLASS}>
+                    {content}
+                  </button>
+                )}
+              </li>
+            );
+          })}
         </ul>
       </div>
     </div>
