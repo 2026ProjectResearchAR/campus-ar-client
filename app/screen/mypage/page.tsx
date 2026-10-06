@@ -8,6 +8,8 @@ import {
   LuSquarePen,
 } from "react-icons/lu";
 
+import ApiHealthCheck from "@/componets/ApiHealthCheck";
+
 /**
  * マイページ (ui.pen frame "My page")
  *
@@ -46,7 +48,7 @@ export default function MyPage() {
         </div>
 
         {/* メニュー */}
-        <ul className="mt-[116px] space-y-7 px-[27px] pb-[140px]">
+        <ul className="mt-[116px] space-y-7 px-[27px]">
           {MENU.map((item) => (
             <li key={item.label}>
               <button
@@ -66,6 +68,11 @@ export default function MyPage() {
             </li>
           ))}
         </ul>
+
+        {/* API 疎通確認 */}
+        <div className="mt-7 px-[27px] pb-[140px]">
+          <ApiHealthCheck />
+        </div>
       </div>
     </div>
   );
