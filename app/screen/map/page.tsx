@@ -13,6 +13,7 @@ import { LuSearch } from "react-icons/lu";
 import EmptyState from "@/componets/EmptyState";
 import ErrorState from "@/componets/ErrorState";
 import LoadingState from "@/componets/LoadingState";
+import SpotDetailSheet from "@/componets/SpotDetailSheet";
 import {
   fetchBuildings,
   MAP_CATEGORIES,
@@ -60,6 +61,8 @@ export default function MapPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<unknown>(null);
   const [reloadKey, setReloadKey] = useState(0);
+  // 詳細シートに表示中の建物
+  const [selectedSpotId, setSelectedSpotId] = useState<string | null>(null);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -88,6 +91,8 @@ export default function MapPage() {
     if (!selectedOption || selectedOption === "すべて") return true;
     return spot.category === selectedOption;
   });
+
+  const selectedSpot = spots.find((spot) => spot.id === selectedSpotId) ?? null;
 
   const handleOptionClick = (option: string) => {
     if (selectedOption === option) {
@@ -178,7 +183,8 @@ export default function MapPage() {
             key={spot.id}
             type="button"
             style={{ top: spot.top, left: spot.left }}
-            onClick={() => alert(`${spot.name} (${spot.category})`)}
+            aria-haspopup="dialog"
+            onClick={() => setSelectedSpotId(spot.id)}
             className="absolute flex -translate-x-1/2 -translate-y-1/2 cursor-pointer flex-col items-center"
           >
             {/* 吹き出し本体 */}
@@ -203,6 +209,14 @@ export default function MapPage() {
           <span className="size-4 rounded-full bg-locator" />
         </div>
       </div>
+
+      {selectedSpot && (
+        <SpotDetailSheet
+          spot={selectedSpot}
+          mark={CATEGORY_MARKS[selectedSpot.category]}
+          onClose={() => setSelectedSpotId(null)}
+        />
+      )}
     </div>
   );
 }
