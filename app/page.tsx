@@ -3,6 +3,7 @@ import Link from 'next/link';
 import styles from './page.module.css';
 import { FaSearch } from "react-icons/fa";
 import { LuMapPin } from "react-icons/lu";
+import NavBar from '@/componets/NavBar';
 
 
 export default function HomePage() {
@@ -10,6 +11,7 @@ export default function HomePage() {
     // w-full max-w-[430px]: 幅100%かつ最大430px
     // mx-auto: 左右中央揃え (margin: 0 auto)
     // min-h-screen: 画面の高さいっぱい
+    <>
     <div className="w-full max-w-[430px] mx-auto min-h-screen bg-white font-sans text-gray-800 pb-10">
 
       {/* 2. メインコンテンツ */}
@@ -45,7 +47,7 @@ export default function HomePage() {
         {/* 赤いメインボタン（Tailwind + モジュールの併用例） */}
         {/* `${styles.customGlow}` でモジュールの影を追加 */}
         <Link 
-          href="screen/map" 
+          href="/screen/map" 
           className={`bg-[#c8161d] text-white rounded-2xl px-4 py-0 flex items-center gap-3 no-underline active:scale-[0.98] transition-transform ${styles.customGlow}`}
         >
           {/* 白丸アイコン背景 */}
@@ -70,5 +72,6 @@ export default function HomePage() {
 
       </main>
     </div>
+    </>
   );
 }

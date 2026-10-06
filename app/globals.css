@@ -24,3 +24,20 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* ---------------------------------------------------------------
+ * ui_design/ui.pen のデザイントークン
+ * (.pen の fill / stroke / effect の値をそのまま持ってきている)
+ * --------------------------------------------------------------- */
+@theme {
+  --color-brand: #f50000; /* アクセント赤: chip / pin / タブバーの丸 */
+  --color-canvas: #fff9f5; /* 画面の下地 (frame の fill) */
+  --color-hairline: #cbd6dc; /* カード・チップの枠線 */
+  --color-placeholder: #c5ccd0; /* 検索プレースホルダー */
+  --color-ink: #1e1e1e; /* アイコンの stroke */
+  --color-locator: #0085cd; /* 現在地マーカー */
+  --color-overlay: #434343; /* スキャン画面のガイドバナー */
+
+  /* effect: shadow / offset(0,4) / blur 3.5 / #0000000d */
+  --shadow-card: 0 4px 3.5px rgb(0 0 0 / 0.05);
+}
