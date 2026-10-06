@@ -5,6 +5,12 @@ import Image from "next/image";
 import { BsFillBadgeWcFill } from "react-icons/bs";
 import { IoBookOutline, IoFlaskOutline } from "react-icons/io5";
 import { LuSearch } from "react-icons/lu";
+import { useGeolocation } from "@/hooks/useGeolocation";
+import {
+  isInsideMap,
+  latLngToMapPercent,
+  metersToMapPercentX,
+} from "@/lib/geo";
 
 /**
  * マップ画面 (ui.pen frame "Map")
@@ -45,8 +51,28 @@ const spotData = [
 
 const categories = ["すべて", "研究室", "自習室", "トイレ", "カフェ", "その他"];
 
-/** 現在地マーカー (ui.pen "Group 13") の中心座標 */
-const CURRENT_POSITION = { left: "39.9%", top: "52.3%" };
+/** マップ画像の縦横比 (object-cover の切り抜き計算用) */
+const MAP_ASPECT = { w: 4, h: 3 };
+
+/**
+ * 画像上の % 座標を、object-cover で表示されたコンテナ上の位置 (CSS) に変換する。
+ * コンテナは container-type: size のため cqw / cqh が使える。
+ */
+function imagePercentToCss(x: number, y: number) {
+  const w = `max(100cqw, ${(100 * MAP_ASPECT.w) / MAP_ASPECT.h}cqh)`;
+  const h = `max(${(100 * MAP_ASPECT.h) / MAP_ASPECT.w}cqw, 100cqh)`;
+  return {
+    left: `calc(50cqw + ${(x - 50) / 100} * ${w})`,
+    top: `calc(50cqh + ${(y - 50) / 100} * ${h})`,
+    w,
+  };
+}
+
+const GEO_NOTICE: Record<string, string> = {
+  denied: "位置情報の利用が許可されていません。ブラウザの設定を確認してください",
+  unavailable: "位置情報を取得できません",
+  error: "位置情報の取得に失敗しました",
+};
 
 export default function MapPage() {
   {
@@ -57,6 +83,21 @@ export default function MapPage() {
     /* マップ画像が未配置のときはプレースホルダーに切り替える */
   }
   const [mapImageAvailable, setMapImageAvailable] = useState(true);
+
+  // 現在地 (Geolocation API)
+  const geo = useGeolocation();
+  const currentPercent =
+    geo.status === "granted" && geo.lat !== null && geo.lng !== null
+      ? latLngToMapPercent({ lat: geo.lat, lng: geo.lng })
+      : null;
+  const outOfCampus = currentPercent !== null && !isInsideMap(currentPercent);
+  const currentCss =
+    currentPercent && !outOfCampus
+      ? imagePercentToCss(currentPercent.x, currentPercent.y)
+      : null;
+  const geoNotice = outOfCampus
+    ? "現在地がキャンパス外のため表示できません"
+    : (GEO_NOTICE[geo.status] ?? null);
 
   // 選択されたカテゴリに応じてピンをフィルタリング
   const filteredSpots = spotData.filter((spot) => {
@@ -109,7 +150,7 @@ export default function MapPage() {
       </div>
 
       {/* メインマップエリア */}
-      <div className="relative mx-[3px] mt-[17px] min-h-[666px] flex-1 overflow-hidden">
+      <div className="relative mx-[3px] mt-[17px] min-h-[666px] flex-1 overflow-hidden [container-type:size]">
         {mapImageAvailable ? (
           <Image
             src="/seta_b_l_2026.jpg"
@@ -152,12 +193,38 @@ export default function MapPage() {
         ))}
 
         {/* 現在地 */}
-        <div
-          style={CURRENT_POSITION}
-          className="absolute flex size-[30px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-[3px] border-locator bg-white"
-        >
-          <span className="size-4 rounded-full bg-locator" />
-        </div>
+        {currentCss && (
+          <>
+            {geo.accuracy !== null && (
+              <div
+                aria-hidden
+                style={{
+                  left: currentCss.left,
+                  top: currentCss.top,
+                  width: `calc(${(2 * metersToMapPercentX(geo.accuracy)) / 100} * ${currentCss.w})`,
+                  aspectRatio: "1",
+                }}
+                className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 rounded-full bg-locator/15"
+              />
+            )}
+            <div
+              style={{ left: currentCss.left, top: currentCss.top }}
+              className="absolute flex size-[30px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-[3px] border-locator bg-white"
+            >
+              <span className="size-4 rounded-full bg-locator" />
+            </div>
+          </>
+        )}
+
+        {/* 現在地が表示できない場合の通知 */}
+        {geoNotice && (
+          <p
+            role="status"
+            className="absolute inset-x-3 bottom-3 rounded-[12px] border border-hairline bg-white px-3 py-2 text-center text-[11px] text-black shadow-card"
+          >
+            {geoNotice}
+          </p>
+        )}
       </div>
     </div>
   );
