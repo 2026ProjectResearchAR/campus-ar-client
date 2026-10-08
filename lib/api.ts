@@ -88,3 +88,12 @@ export type Health = { status: string; timestamp: string };
 export function getHealth(signal?: AbortSignal): Promise<Health> {
   return apiFetch<Health>("/api/health", { signal });
 }
+
+/** ARマーカーが設置されている建物 */
+export type Building = { id: string; name: string; marker_count: number };
+
+/** GET /api/v1/buildings */
+export async function getBuildings(signal?: AbortSignal): Promise<Building[]> {
+  const res = await apiFetch<{ data: Building[] }>("/api/v1/buildings", { signal });
+  return res.data;
+}

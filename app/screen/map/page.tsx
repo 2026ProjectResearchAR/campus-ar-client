@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import Image from "next/image";
-import { BsFillBadgeWcFill } from "react-icons/bs";
 import { IoBookOutline, IoFlaskOutline } from "react-icons/io5";
 import { LuLocateFixed, LuMinus, LuPlus, LuSearch } from "react-icons/lu";
 import { useGeolocation } from "@/hooks/useGeolocation";
 import { usePanZoom } from "@/hooks/usePanZoom";
+import { type Building, getBuildings } from "@/lib/api";
 import {
   isInsideMap,
   latLngToMapPercent,
@@ -24,34 +24,16 @@ import {
  *   - 現在地     : 24px / #0085CD
  */
 
-/** x / y はマップ画像上の % 座標 (左上 0,0 / 右下 100,100)。ピンの足の先端がこの点を指す */
-const spotData = [
-  {
-    id: 1,
-    name: "7号館",
-    category: "研究室",
-    mark: <IoFlaskOutline />,
-    x: 47,
-    y: 20,
-  },
-  {
-    id: 2,
-    name: "図書館",
-    category: "自習室",
-    mark: <IoBookOutline />,
-    x: 58,
-    y: 73,
-  },
-  {
-    // TODO: 仮の位置。実際のトイレの位置に合わせる
-    id: 3,
-    name: "メインWC",
-    category: "トイレ",
-    mark: <BsFillBadgeWcFill />,
-    x: 64,
-    y: 53,
-  },
-];
+/**
+ * 建物名 (API の buildings.name) ごとのピンの表示情報。
+ * API は位置を返さないため、マップ上の位置とカテゴリはここで持つ。
+ * x / y はマップ画像上の % 座標 (左上 0,0 / 右下 100,100)。ピンの足の先端がこの点を指す。
+ * ピンは API が返した建物のうち、ここに登録されているものだけ表示する。
+ */
+const BUILDING_PINS: Record<string, { category: string; mark: ReactNode; x: number; y: number }> = {
+  "7号館": { category: "研究室", mark: <IoFlaskOutline />, x: 47, y: 20 },
+  図書館: { category: "自習室", mark: <IoBookOutline />, x: 58, y: 73 },
+};
 
 const categories = ["すべて", "研究室", "自習室", "トイレ", "カフェ", "その他"];
 
@@ -86,8 +68,31 @@ export default function MapPage() {
     ? "現在地がキャンパス外のため表示できません"
     : (GEO_NOTICE[geo.status] ?? null);
 
+  // API から建物一覧を取得し、位置が登録されている建物だけをピンにする
+  const [buildings, setBuildings] = useState<Building[]>([]);
+  const [buildingsError, setBuildingsError] = useState(false);
+  useEffect(() => {
+    const controller = new AbortController();
+    getBuildings(controller.signal)
+      .then(setBuildings)
+      .catch(() => {
+        if (controller.signal.aborted) return;
+        setBuildingsError(true);
+      });
+    return () => controller.abort();
+  }, []);
+  const spots = buildings.flatMap((b) => {
+    const pin = BUILDING_PINS[b.name];
+    return pin ? [{ id: b.id, name: b.name, ...pin }] : [];
+  });
+
+  const notices = [
+    buildingsError && "建物情報を取得できませんでした",
+    geoNotice,
+  ].filter((n): n is string => !!n);
+
   // 選択されたカテゴリに応じてピンをフィルタリング
-  const filteredSpots = spotData.filter((spot) => {
+  const filteredSpots = spots.filter((spot) => {
     if (!selectedOption || selectedOption === "すべて") return true;
     return spot.category === selectedOption;
   });
@@ -277,14 +282,18 @@ export default function MapPage() {
           )}
         </div>
 
-        {/* 現在地が表示できない場合の通知 */}
-        {geoNotice && (
+        {/* 建物情報・現在地が表示できない場合の通知 */}
+        {notices.length > 0 && (
           <p
             role="status"
             // 下はタブバー、右は拡大ボタンがあるので、左上に小さく出す
             className="pointer-events-none absolute left-3 right-[68px] top-3 rounded-xl border border-hairline bg-surface/95 px-3 py-2 text-[12px] leading-snug text-muted shadow-card backdrop-blur"
           >
-            {geoNotice}
+            {notices.map((n) => (
+              <span key={n} className="block">
+                {n}
+              </span>
+            ))}
           </p>
         )}
       </div>
