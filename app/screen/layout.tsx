@@ -1,8 +1,9 @@
 import TabBar from "@/componets/TabBar";
 
 /**
- * ui.pen の frame (402 x 874 / fill #FFF9F5) にあたる共通の枠。
- * html / body は root layout が持っているのでここでは div でラップする。
+ * ui.pen の frame (402 x 874) にあたる共通の枠。
+ * html / body と上部の NavBar は root layout が持っているので、
+ * ここでは残りの高さ (flex-1) を埋める div でラップする。
  */
 export default function ScreenLayout({
   children,
@@ -10,7 +11,7 @@ export default function ScreenLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="relative mx-auto flex min-h-dvh w-full max-w-[430px] flex-col bg-canvas font-sans">
+    <div className="relative mx-auto flex w-full flex-1 max-w-[430px] flex-col bg-canvas font-sans">
       {children}
       <TabBar />
     </div>

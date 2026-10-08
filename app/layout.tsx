@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import NavBar from "@/componets/NavBar";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
@@ -22,6 +22,14 @@ export const metadata: Metadata = {
     "龍谷大学 瀬田キャンパスの研究室や施設を、マップとARで案内するキャンパスガイドアプリです。",
 };
 
+// viewportFit: "cover" がないと iPhone で env(safe-area-inset-*) が 0 のままになる
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#ffffff",
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -32,7 +40,7 @@ export default function RootLayout({
       lang="ja"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-screen flex flex-col">
+      <body className="flex min-h-dvh flex-col">
         <NavBar />
         {children}
       </body>

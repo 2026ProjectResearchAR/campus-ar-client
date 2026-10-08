@@ -14,19 +14,19 @@ import ApiHealthCheck from "@/componets/ApiHealthCheck";
 /**
  * マイページ (ui.pen frame "My page")
  *
- * デザイン実寸 (frame 402 x 874):
- *   - 背景の赤い楕円 : 541 x 330 / rotate 12deg / #F50000 10%
- *   - アバター       : x=35 / y=66 / 80 x 80 / #F50000
- *   - メニュー行     : x=26 / 348 x 50 / radius 15 / 白 + #CBD6DC の枠線
- *   - 行内           : アイコン x=20(25px) / ラベル x=59(16px semibold)
+ * レイアウト (ui.pen の構成をベースに、余白とサイズを 4px グリッドで調整):
+ *   - 背景の赤い楕円 : 541 x 300 / rotate 12deg / brand 8%
+ *   - アバター       : 64 x 64 / 左右 20px
+ *   - メニュー行     : 高さ 56px / radius 16 / 行間 8px
+ *   - 行内           : アイコン 36px の薄赤タイル / ラベル 15px semibold
  */
 const MENU = [
-  { label: "スタンプコレクション", icon: <LuAward size={25} strokeWidth={1.6} /> },
-  { label: "避難ガイド・安全情報", icon: <LuShield size={25} strokeWidth={2.5} /> },
-  { label: "お気に入り", icon: <LuHeart size={25} strokeWidth={2} /> },
-  { label: "メモ", icon: <LuSquarePen size={25} strokeWidth={2} /> },
-  { label: "イベント案内", icon: <LuCalendar size={25} strokeWidth={2} /> },
-  { label: "設定", icon: <LuSettings size={25} strokeWidth={1.6} /> },
+  { label: "スタンプコレクション", icon: <LuAward size={20} strokeWidth={2} /> },
+  { label: "避難ガイド・安全情報", icon: <LuShield size={20} strokeWidth={2} /> },
+  { label: "お気に入り", icon: <LuHeart size={20} strokeWidth={2} /> },
+  { label: "メモ", icon: <LuSquarePen size={20} strokeWidth={2} /> },
+  { label: "イベント案内", icon: <LuCalendar size={20} strokeWidth={2} /> },
+  { label: "設定", icon: <LuSettings size={20} strokeWidth={2} /> },
 ];
 
 export const metadata: Metadata = {
@@ -36,39 +36,43 @@ export const metadata: Metadata = {
 
 export default function MyPage() {
   return (
-    // pt-[66px]: ステータスバー領域 + アバターまでの余白
-    <div className="relative flex-1 overflow-hidden pt-[66px]">
+    <div className="relative flex-1 overflow-hidden pt-8">
       {/* 背景の赤い楕円 */}
       <div
         aria-hidden
-        className="pointer-events-none absolute -left-[100px] -top-[88px] h-[330px] w-[541px] rotate-12 rounded-[50%] bg-brand/10"
+        className="pointer-events-none absolute -left-[100px] -top-[120px] h-[300px] w-[541px] rotate-12 rounded-[50%] bg-brand/8"
       />
 
-      <div className="relative">
+      <div className="relative px-5">
         {/* プロフィール */}
-        <div className="flex items-center gap-[28px] pl-[35px]">
-          <span className="flex size-20 shrink-0 items-center justify-center rounded-full bg-brand text-[40px] font-medium leading-none text-white">
+        <div className="flex items-center gap-4">
+          <span className="flex size-16 shrink-0 items-center justify-center rounded-full bg-brand text-[28px] font-semibold leading-none text-white ring-4 ring-surface">
             G
           </span>
-          <span className="text-[36px] font-medium text-black">ゲスト</span>
+          <div className="min-w-0">
+            <p className="text-[22px] font-bold leading-tight text-ink">ゲスト</p>
+            <p className="mt-1 text-[13px] text-muted">ログインせずに利用中</p>
+          </div>
         </div>
 
         {/* メニュー */}
-        <ul className="mt-[116px] space-y-7 px-[27px]">
+        <ul className="mt-10 space-y-2">
           {MENU.map((item) => (
             <li key={item.label}>
               <button
                 type="button"
-                className="flex h-[50px] w-full items-center rounded-[15px] border border-hairline bg-white pl-[20px] pr-[30px] text-left shadow-card transition-colors hover:bg-gray-50"
+                className="flex h-14 w-full items-center gap-3 rounded-2xl border border-hairline bg-surface pl-3 pr-3 text-left shadow-card transition-colors active:bg-canvas"
               >
-                <span className="shrink-0 text-ink">{item.icon}</span>
-                <span className="ml-[14px] text-[16px] font-semibold text-black">
+                <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-brand-soft text-brand">
+                  {item.icon}
+                </span>
+                <span className="text-[15px] font-semibold text-ink">
                   {item.label}
                 </span>
                 <LuChevronRight
-                  size={26}
-                  strokeWidth={2.5}
-                  className="ml-auto shrink-0 text-ink"
+                  size={20}
+                  strokeWidth={2.2}
+                  className="ml-auto shrink-0 text-placeholder"
                 />
               </button>
             </li>
@@ -76,7 +80,7 @@ export default function MyPage() {
         </ul>
 
         {/* API 疎通確認 */}
-        <div className="mt-7 px-[27px] pb-[140px]">
+        <div className="mt-6 pb-[calc(var(--tabbar-h)+24px)]">
           <ApiHealthCheck />
         </div>
       </div>

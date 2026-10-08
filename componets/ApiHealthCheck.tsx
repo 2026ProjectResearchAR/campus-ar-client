@@ -34,6 +34,6 @@ export default function ApiHealthCheck() {
   if (state.kind === "loading") return <LoadingState message="API に接続中..." />;
   if (state.kind === "error") return <ErrorState error={state.error} onRetry={retry} />;
   return (
-    <p className="text-center text-[12px] text-gray-500">API 接続: {state.health.status}</p>
+    <p className="text-center text-[12px] text-muted">API 接続: {state.health.status}</p>
   );
 }

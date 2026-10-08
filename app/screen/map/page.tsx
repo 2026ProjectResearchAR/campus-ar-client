@@ -4,8 +4,9 @@ import { useState } from "react";
 import Image from "next/image";
 import { BsFillBadgeWcFill } from "react-icons/bs";
 import { IoBookOutline, IoFlaskOutline } from "react-icons/io5";
-import { LuSearch } from "react-icons/lu";
+import { LuLocateFixed, LuMinus, LuPlus, LuSearch } from "react-icons/lu";
 import { useGeolocation } from "@/hooks/useGeolocation";
+import { usePanZoom } from "@/hooks/usePanZoom";
 import {
   isInsideMap,
   latLngToMapPercent,
@@ -15,62 +16,51 @@ import {
 /**
  * マップ画面 (ui.pen frame "Map")
  *
- * デザイン実寸 (frame 402 x 874):
- *   - 検索バー   : x=26 / y=50 / 356 x 41 / radius 20
- *   - チップ     : x=16 / y=108 / 52 x 24 / radius 20 / 間隔 16px
- *   - マップ     : x=3  / y=149 / 396 x 666 / opacity 0.8
- *   - ピン       : 52 x 24 の吹き出し + 14 x 10 の足
- *   - 現在地     : 30px / #0085CD
+ * レイアウト (ui.pen の構成をベースに、余白とサイズを 4px グリッドで調整):
+ *   - 検索バー   : 左右 16px / 高さ 44px / 完全な角丸
+ *   - チップ     : 高さ 32px / 幅は文字に合わせる / 間隔 8px
+ *   - マップ     : 残りの高さいっぱい (タブバーの下まで敷く)。ドラッグで移動・ピンチで拡大
+ *   - ピン       : 高さ 28px の吹き出し + 12 x 8 の足。拡大しても大きさは変えない
+ *   - 現在地     : 24px / #0085CD
  */
+
+/** x / y はマップ画像上の % 座標 (左上 0,0 / 右下 100,100)。ピンの足の先端がこの点を指す */
 const spotData = [
   {
     id: 1,
     name: "7号館",
     category: "研究室",
     mark: <IoFlaskOutline />,
-    top: "50%",
-    left: "40%",
+    x: 47,
+    y: 20,
   },
   {
     id: 2,
     name: "図書館",
     category: "自習室",
     mark: <IoBookOutline />,
-    top: "70%",
-    left: "60%",
+    x: 58,
+    y: 73,
   },
   {
+    // TODO: 仮の位置。実際のトイレの位置に合わせる
     id: 3,
     name: "メインWC",
     category: "トイレ",
     mark: <BsFillBadgeWcFill />,
-    top: "20%",
-    left: "50%",
+    x: 64,
+    y: 53,
   },
 ];
 
 const categories = ["すべて", "研究室", "自習室", "トイレ", "カフェ", "その他"];
 
-/** マップ画像の縦横比 (object-cover の切り抜き計算用) */
-const MAP_ASPECT = { w: 4, h: 3 };
-
-/**
- * 画像上の % 座標を、object-cover で表示されたコンテナ上の位置 (CSS) に変換する。
- * コンテナは container-type: size のため cqw / cqh が使える。
- */
-function imagePercentToCss(x: number, y: number) {
-  const w = `max(100cqw, ${(100 * MAP_ASPECT.w) / MAP_ASPECT.h}cqh)`;
-  const h = `max(${(100 * MAP_ASPECT.h) / MAP_ASPECT.w}cqw, 100cqh)`;
-  return {
-    left: `calc(50cqw + ${(x - 50) / 100} * ${w})`,
-    top: `calc(50cqh + ${(y - 50) / 100} * ${h})`,
-    w,
-  };
-}
+/** マップ画像 (public/seta_b_l_2026.jpg) の実寸 */
+const MAP_SIZE = { w: 1200, h: 900 };
 
 const GEO_NOTICE: Record<string, string> = {
-  denied: "位置情報の利用が許可されていません。ブラウザの設定を確認してください",
-  unavailable: "位置情報を取得できません",
+  denied: "位置情報がオフのため、現在地を表示できません",
+  unavailable: "現在地を取得できません",
   error: "位置情報の取得に失敗しました",
 };
 
@@ -91,10 +81,7 @@ export default function MapPage() {
       ? latLngToMapPercent({ lat: geo.lat, lng: geo.lng })
       : null;
   const outOfCampus = currentPercent !== null && !isInsideMap(currentPercent);
-  const currentCss =
-    currentPercent && !outOfCampus
-      ? imagePercentToCss(currentPercent.x, currentPercent.y)
-      : null;
+  const current = currentPercent && !outOfCampus ? currentPercent : null;
   const geoNotice = outOfCampus
     ? "現在地がキャンパス外のため表示できません"
     : (GEO_NOTICE[geo.status] ?? null);
@@ -105,6 +92,19 @@ export default function MapPage() {
     return spot.category === selectedOption;
   });
 
+  // マップの移動・拡大
+  const { containerRef, view, canZoomIn, canZoomOut, zoomBy, centerOn, handlers } =
+    usePanZoom(MAP_SIZE);
+
+  /** 画像上の % 座標 -> マップ領域内の表示位置 (px) */
+  const toScreen = (x: number, y: number) =>
+    view
+      ? {
+          left: view.x + (x / 100) * MAP_SIZE.w * view.scale,
+          top: view.y + (y / 100) * MAP_SIZE.h * view.scale,
+        }
+      : null;
+
   const handleOptionClick = (option: string) => {
     if (selectedOption === option) {
       setSelectedOption(null);
@@ -114,22 +114,22 @@ export default function MapPage() {
   };
 
   return (
-    // pt-[50px]: ui.pen のステータスバー領域ぶんの余白 (モック自体は描画しない)
-    <div className="flex flex-1 flex-col pt-[50px]">
+    <div className="flex flex-1 flex-col pt-3">
       {/* 検索バー */}
-      <div className="px-[23px]">
-        <label className="flex h-[41px] items-center gap-[10px] rounded-[20px] border border-hairline bg-white px-4 shadow-card">
-          <LuSearch size={18} strokeWidth={2.13} className="shrink-0 text-ink" />
+      <div className="px-4">
+        <label className="flex h-11 items-center gap-2.5 rounded-full border border-hairline bg-surface px-4 shadow-card focus-within:border-brand/40">
+          <LuSearch size={18} strokeWidth={2.2} className="shrink-0 text-muted" />
+          {/* 16px 未満だと iOS Safari がフォーカス時にズームするため text-base */}
           <input
             type="search"
             placeholder="研究室・施設を検索"
-            className="w-full bg-transparent text-[12px] text-black outline-none placeholder:text-placeholder"
+            className="w-full bg-transparent text-base text-ink outline-none placeholder:text-[14px] placeholder:text-placeholder"
           />
         </label>
       </div>
 
       {/* フィルターボタンエリア */}
-      <div className="mt-[17px] flex gap-4 overflow-x-auto px-4 pb-px [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div className="mt-3 flex gap-2 overflow-x-auto px-4 pb-0.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {categories.map((option) => {
           const active = selectedOption === option;
           return (
@@ -137,10 +137,11 @@ export default function MapPage() {
               key={option}
               type="button"
               onClick={() => handleOptionClick(option)}
-              className={`h-6 w-[52px] shrink-0 rounded-[20px] border border-hairline text-[10px] shadow-card transition-colors ${
+              aria-pressed={active}
+              className={`h-8 shrink-0 rounded-full border px-3.5 text-[13px] transition-colors ${
                 active
-                  ? "bg-brand font-bold text-white"
-                  : "bg-white font-normal text-black"
+                  ? "border-brand bg-brand font-bold text-white"
+                  : "border-hairline bg-surface font-medium text-ink active:bg-canvas"
               }`}
             >
               {option}
@@ -150,77 +151,138 @@ export default function MapPage() {
       </div>
 
       {/* メインマップエリア */}
-      <div className="relative mx-[3px] mt-[17px] min-h-[666px] flex-1 overflow-hidden [container-type:size]">
-        {mapImageAvailable ? (
-          <Image
-            src="/seta_b_l_2026.jpg"
-            alt="キャンパスマップ"
-            fill
-            sizes="402px"
-            priority
-            className="object-cover opacity-80"
-            onError={() => setMapImageAvailable(false)}
-          />
-        ) : (
-          // public/seta_b_l_2026.jpg が未配置のときの代替表示
-          <div
-            aria-hidden
-            className="absolute inset-0 bg-[#efeae4] opacity-80 [background-image:linear-gradient(#e3ded8_1px,transparent_1px),linear-gradient(90deg,#e3ded8_1px,transparent_1px)] [background-size:40px_40px]"
-          />
-        )}
+      {/* touch-action: none でページ全体の拡大・スクロールと競合させない */}
+      <div
+        ref={containerRef}
+        {...handlers}
+        className="relative mt-3 min-h-0 flex-1 touch-none select-none overflow-hidden border-t border-hairline bg-[#e9efe4]"
+      >
+        {/* 画像は実寸のまま置き、transform で移動・拡大する */}
+        <div
+          className="absolute left-0 top-0 origin-top-left"
+          style={{
+            width: MAP_SIZE.w,
+            height: MAP_SIZE.h,
+            transform: view
+              ? `translate(${view.x}px, ${view.y}px) scale(${view.scale})`
+              : undefined,
+            visibility: view ? "visible" : "hidden",
+          }}
+        >
+          {mapImageAvailable ? (
+            <Image
+              src="/seta_b_l_2026.jpg"
+              alt="キャンパスマップ"
+              fill
+              sizes="1200px"
+              priority
+              draggable={false}
+              className="opacity-90"
+              onError={() => setMapImageAvailable(false)}
+            />
+          ) : (
+            // public/seta_b_l_2026.jpg が未配置のときの代替表示
+            <div
+              aria-hidden
+              className="absolute inset-0 bg-[#efeae4] opacity-90 [background-image:linear-gradient(#e3ded8_1px,transparent_1px),linear-gradient(90deg,#e3ded8_1px,transparent_1px)] [background-size:40px_40px]"
+            />
+          )}
+        </div>
 
         {/* 画像の上に重ねるピン */}
         {filteredSpots.map((spot) => (
           <button
             key={spot.id}
             type="button"
-            style={{ top: spot.top, left: spot.left }}
+            style={toScreen(spot.x, spot.y) ?? { visibility: "hidden" }}
             onClick={() => alert(`${spot.name} (${spot.category})`)}
-            className="absolute flex -translate-x-1/2 -translate-y-1/2 cursor-pointer flex-col items-center"
+            // 足の先端が座標を指すよう、ピン全体の下端を基準に配置する
+            className="absolute flex -translate-x-1/2 -translate-y-full cursor-pointer flex-col items-center drop-shadow-[0_2px_4px_rgb(31_35_40/0.25)] transition-transform active:scale-95"
           >
             {/* 吹き出し本体 */}
-            <span className="flex h-6 min-w-[52px] items-center gap-2 rounded-[20px] border border-hairline bg-brand px-[10px] shadow-card">
-              <span className="shrink-0 text-[16px] leading-none text-white">
+            <span className="flex h-7 items-center gap-1.5 rounded-full border-[1.5px] border-white bg-brand pl-2 pr-2.5">
+              <span className="shrink-0 text-[14px] leading-none text-white">
                 {spot.mark}
               </span>
-              <span className="whitespace-nowrap text-[12px] font-semibold text-white">
+              <span className="whitespace-nowrap text-[12px] font-bold text-white">
                 {spot.name}
               </span>
             </span>
-            {/* 吹き出しの足 (ui.pen "Polygon 1"): 14 x 10 */}
-            <span className="size-0 border-x-[7px] border-t-[10px] border-x-transparent border-t-brand" />
+            {/* 吹き出しの足 (ui.pen "Polygon 1"): 12 x 8 */}
+            <span className="-mt-px size-0 border-x-[6px] border-t-[8px] border-x-transparent border-t-brand" />
           </button>
         ))}
 
         {/* 現在地 */}
-        {currentCss && (
+        {current && view && (
           <>
             {geo.accuracy !== null && (
               <div
                 aria-hidden
                 style={{
-                  left: currentCss.left,
-                  top: currentCss.top,
-                  width: `calc(${(2 * metersToMapPercentX(geo.accuracy)) / 100} * ${currentCss.w})`,
+                  ...toScreen(current.x, current.y),
+                  width:
+                    ((2 * metersToMapPercentX(geo.accuracy)) / 100) *
+                    MAP_SIZE.w *
+                    view.scale,
                   aspectRatio: "1",
                 }}
                 className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 rounded-full bg-locator/15"
               />
             )}
             <div
-              style={{ left: currentCss.left, top: currentCss.top }}
-              className="absolute flex size-[30px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-[3px] border-locator bg-white"
-            >
-              <span className="size-4 rounded-full bg-locator" />
-            </div>
+              style={toScreen(current.x, current.y) ?? undefined}
+              className="pointer-events-none absolute size-6 -translate-x-1/2 -translate-y-1/2 rounded-full border-[3px] border-white bg-locator shadow-[0_0_0_1px_rgb(0_133_205/0.3),0_2px_6px_rgb(0_0_0/0.25)]"
+            />
           </>
         )}
+
+        {/* 拡大・縮小・現在地ボタン (タップ領域 44px) */}
+        <div className="absolute right-3 top-3 flex flex-col gap-2">
+          <div className="flex flex-col overflow-hidden rounded-xl border border-hairline bg-surface/95 shadow-card backdrop-blur">
+            <button
+              type="button"
+              aria-label="拡大"
+              disabled={!canZoomIn}
+              onClick={() => zoomBy(1.5)}
+              className="flex size-11 items-center justify-center text-ink active:bg-canvas disabled:text-placeholder"
+            >
+              <LuPlus size={20} strokeWidth={2.2} />
+            </button>
+            <span aria-hidden className="mx-2 h-px bg-hairline" />
+            <button
+              type="button"
+              aria-label="縮小"
+              disabled={!canZoomOut}
+              onClick={() => zoomBy(1 / 1.5)}
+              className="flex size-11 items-center justify-center text-ink active:bg-canvas disabled:text-placeholder"
+            >
+              <LuMinus size={20} strokeWidth={2.2} />
+            </button>
+          </div>
+          {current && (
+            <button
+              type="button"
+              aria-label="現在地を表示"
+              onClick={() =>
+                centerOn(
+                  (current.x / 100) * MAP_SIZE.w,
+                  (current.y / 100) * MAP_SIZE.h,
+                )
+              }
+              className="flex size-11 items-center justify-center rounded-xl border border-hairline bg-surface/95 text-locator shadow-card backdrop-blur active:bg-canvas"
+            >
+              <LuLocateFixed size={20} strokeWidth={2.2} />
+            </button>
+          )}
+        </div>
 
         {/* 現在地が表示できない場合の通知 */}
         {geoNotice && (
           <p
             role="status"
-            className="absolute inset-x-3 bottom-3 rounded-[12px] border border-hairline bg-white px-3 py-2 text-center text-[11px] text-black shadow-card"
+            // 下はタブバー、右は拡大ボタンがあるので、左上に小さく出す
+            className="pointer-events-none absolute left-3 right-[68px] top-3 rounded-xl border border-hairline bg-surface/95 px-3 py-2 text-[12px] leading-snug text-muted shadow-card backdrop-blur"
           >
             {geoNotice}
           </p>

@@ -48,23 +48,20 @@ export default function NavBar(props: NavBarProps) {
         exact ? pathname === href : pathname.startsWith(href);
 
     return (
-        <div className={`w-full max-w-[430px] mx-auto font-san border-b border-gray-100 text-gray-800 pb-3 ${props.bgColor || 'bg-white'}`}>
-            {/* 1. ヘッダー */}
-            {/* flex justify-between items-center: 左右に振り分けて上下中央 */}
-            <header className="flex justify-between items-center px-4 pt-3">
-            <div className="flex items-center gap-2">
-                {/* w-6 h-6: 24px × 24px */}
-                <div className="w-6 h-6 flex items-center justify-center text-white text-xs font-bold">
-                    <img src="/ryukoku-logo-transparent.png" alt="Ryukoku Logo" />
-                </div>
-                <span className="text-[11px] font-bold text-[#c8161d] tracking-tight">
-                    知能情報メディア課程　研究室ガイド
-                </span>
-                </div>
-                {/* ハンバーガーメニュー */}
+        <>
+        <div className={`sticky top-0 z-40 mx-auto w-full max-w-[430px] pt-[env(safe-area-inset-top)] border-b border-hairline text-ink ${props.bgColor || 'bg-surface/95 backdrop-blur'}`}>
+            {/* 1. ヘッダー: 高さ 56px / 左右 16px */}
+            <header className="flex h-14 items-center justify-between pl-4 pr-2">
+                <Link href="/" className="flex min-w-0 items-center gap-2.5 no-underline">
+                    <img src="/ryukoku-logo-transparent.png" alt="龍谷大学" className="size-7 shrink-0 object-contain" />
+                    <span className="truncate text-[13px] font-bold tracking-wide text-brand">
+                        知能情報メディア課程 研究室ガイド
+                    </span>
+                </Link>
+                {/* ハンバーガーメニュー (タップ領域 44px) */}
                 <button
                     type="button"
-                    className="text-[#c8161d] text-xl p-1"
+                    className="flex size-11 shrink-0 items-center justify-center rounded-full text-[26px] text-ink transition-colors active:bg-brand-soft"
                     aria-label="メニューを開く"
                     aria-expanded={open}
                     aria-controls={drawerId}
@@ -73,7 +70,10 @@ export default function NavBar(props: NavBarProps) {
                     <IoIosMenu />
                 </button>
             </header>
+        </div>
 
+            {/* ヘッダーの backdrop-blur が fixed の基準になってしまうため、
+                オーバーレイとドロワーはヘッダーの外 (兄弟要素) に置く */}
             {/* オーバーレイ */}
             <div
                 aria-hidden="true"
@@ -91,22 +91,24 @@ export default function NavBar(props: NavBarProps) {
                 aria-label="メニュー"
                 aria-hidden={!open}
                 inert={!open}
-                className={`fixed inset-y-0 right-0 z-[70] flex w-[78%] max-w-[300px] flex-col bg-white shadow-card transition-transform duration-300 ${
-                    open ? "translate-x-0" : "translate-x-full"
+                // 閉じている間は visibility も落とす。画面外に translate しただけだと
+                // スマホがその分までページ幅を広げ、全体が縮小表示されてしまう
+                className={`fixed inset-y-0 right-0 z-[70] flex w-[80%] max-w-[320px] flex-col bg-surface pt-[env(safe-area-inset-top)] shadow-float transition-[translate,visibility] duration-300 ease-out ${
+                    open ? "visible translate-x-0" : "invisible translate-x-full"
                 }`}
             >
-                <div className="flex items-center justify-between px-4 pt-3 pb-3 border-b border-hairline">
-                    <span className="text-[13px] font-bold text-[#c8161d]">メニュー</span>
+                <div className="flex h-14 items-center justify-between border-b border-hairline pl-5 pr-2">
+                    <span className="text-[15px] font-bold text-ink">メニュー</span>
                     <button
                         type="button"
-                        className="text-[#c8161d] text-2xl p-1"
+                        className="flex size-11 items-center justify-center rounded-full text-[30px] text-ink transition-colors active:bg-brand-soft"
                         aria-label="メニューを閉じる"
                         onClick={() => setOpen(false)}
                     >
                         <IoIosClose />
                     </button>
                 </div>
-                <nav aria-label="メインメニュー" className="flex-1 overflow-y-auto p-3">
+                <nav aria-label="メインメニュー" className="flex-1 overflow-y-auto px-3 py-4">
                     <ul className="flex flex-col gap-1">
                         {MENU_ITEMS.map(({ href, label, icon: Icon, exact }) => {
                             const active = isActive(href, exact);
@@ -116,11 +118,11 @@ export default function NavBar(props: NavBarProps) {
                                         href={href}
                                         onClick={() => setOpen(false)}
                                         aria-current={active ? "page" : undefined}
-                                        className={`flex items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-bold no-underline ${
-                                            active ? "bg-canvas text-brand" : "text-ink active:bg-gray-100"
+                                        className={`flex h-12 items-center gap-3.5 rounded-xl px-3.5 text-[15px] font-semibold no-underline transition-colors ${
+                                            active ? "bg-brand-soft text-brand" : "text-ink active:bg-canvas"
                                         }`}
                                     >
-                                        <Icon size={22} strokeWidth={2.5} />
+                                        <Icon size={20} strokeWidth={2.2} />
                                         {label}
                                     </Link>
                                 </li>
@@ -129,6 +131,6 @@ export default function NavBar(props: NavBarProps) {
                     </ul>
                 </nav>
             </div>
-        </div>
+        </>
     )
 }
