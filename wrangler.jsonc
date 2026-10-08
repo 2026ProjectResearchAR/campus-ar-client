@@ -1,0 +1,35 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "main": ".open-next/worker.js",
+  // Workers Builds の versions upload / deploy 前に OpenNext のビルドを走らせる
+  "build": {
+    "command": "npx opennextjs-cloudflare build"
+  },
+  "name": "campus-ar-client",
+  "compatibility_date": "2026-10-06",
+  "compatibility_flags": [
+    "global_fetch_strictly_public"
+  ],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "services": [
+    {
+      "binding": "WORKER_SELF_REFERENCE",
+      "service": "campus-ar-client"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "NEXT_INC_CACHE_R2_BUCKET",
+      "bucket_name": "campus-ar-client-opennext-cache"
+    }
+  ],
+  "images": {
+    "binding": "IMAGES"
+  },
+  "observability": {
+    "enabled": true
+  }
+}
