@@ -1,7 +1,7 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "main": ".open-next/worker.js",
-  // Workers Builds の versions upload / deploy 前に OpenNext のビルドを走らせる
+  // Workers Builds の deploy / preview 前に OpenNext のビルドを走らせる
   "build": {
     "command": "npx opennextjs-cloudflare build"
   },
@@ -20,16 +20,16 @@
       "service": "campus-ar-client"
     }
   ],
-  "r2_buckets": [
-    {
-      "binding": "NEXT_INC_CACHE_R2_BUCKET",
-      "bucket_name": "campus-ar-client-opennext-cache"
-    }
-  ],
   "images": {
     "binding": "IMAGES"
   },
   "observability": {
     "enabled": true
+  },
+  // PR ブランチのビルドは wrangler preview で動くため、Preview 用のバインディングを別に書く
+  "previews": {
+    "images": {
+      "binding": "IMAGES"
+    }
   }
 }
