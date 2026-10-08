@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import {
   LuAward,
   LuCalendar,
@@ -20,8 +21,14 @@ import ApiHealthCheck from "@/componets/ApiHealthCheck";
  *   - メニュー行     : 高さ 56px / radius 16 / 行間 8px
  *   - 行内           : アイコン 36px の薄赤タイル / ラベル 15px semibold
  */
-const MENU = [
-  { label: "スタンプコレクション", icon: <LuAward size={20} strokeWidth={2} /> },
+type MenuItem = { label: string; icon: React.ReactNode; href?: string };
+
+const MENU: MenuItem[] = [
+  {
+    label: "スタンプコレクション",
+    icon: <LuAward size={20} strokeWidth={2} />,
+    href: "/screen/mypage/stamps",
+  },
   { label: "避難ガイド・安全情報", icon: <LuShield size={20} strokeWidth={2} /> },
   { label: "お気に入り", icon: <LuHeart size={20} strokeWidth={2} /> },
   { label: "メモ", icon: <LuSquarePen size={20} strokeWidth={2} /> },
@@ -51,7 +58,7 @@ export default function MyPage() {
           </span>
           <div className="min-w-0">
             <p className="text-[22px] font-bold leading-tight text-ink">ゲスト</p>
-            <p className="mt-1 text-[13px] text-muted">ログインせずに利用中</p>
+            <p className="mt-1 text-[13px] text-muted">データはこの端末に保存されます</p>
           </div>
         </div>
 
@@ -59,22 +66,15 @@ export default function MyPage() {
         <ul className="mt-10 space-y-2">
           {MENU.map((item) => (
             <li key={item.label}>
-              <button
-                type="button"
-                className="flex h-14 w-full items-center gap-3 rounded-2xl border border-hairline bg-surface pl-3 pr-3 text-left shadow-card transition-colors active:bg-canvas"
-              >
-                <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-brand-soft text-brand">
-                  {item.icon}
-                </span>
-                <span className="text-[15px] font-semibold text-ink">
-                  {item.label}
-                </span>
-                <LuChevronRight
-                  size={20}
-                  strokeWidth={2.2}
-                  className="ml-auto shrink-0 text-placeholder"
-                />
-              </button>
+              {item.href ? (
+                <Link href={item.href} className={ROW_CLASS}>
+                  <MenuRowContent item={item} />
+                </Link>
+              ) : (
+                <button type="button" className={ROW_CLASS}>
+                  <MenuRowContent item={item} />
+                </button>
+              )}
             </li>
           ))}
         </ul>
@@ -85,5 +85,24 @@ export default function MyPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+const ROW_CLASS =
+  "flex h-14 w-full items-center gap-3 rounded-2xl border border-hairline bg-surface pl-3 pr-3 text-left shadow-card transition-colors active:bg-canvas";
+
+function MenuRowContent({ item }: { item: MenuItem }) {
+  return (
+    <>
+      <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-brand-soft text-brand">
+        {item.icon}
+      </span>
+      <span className="text-[15px] font-semibold text-ink">{item.label}</span>
+      <LuChevronRight
+        size={20}
+        strokeWidth={2.2}
+        className="ml-auto shrink-0 text-placeholder"
+      />
+    </>
   );
 }

@@ -1,0 +1,81 @@
+"use client";
+
+import Link from "next/link";
+import { LuAward, LuChevronLeft, LuLock } from "react-icons/lu";
+
+import { STAMP_SPOTS, useStamps } from "@/lib/stamps";
+
+const dateFormat = new Intl.DateTimeFormat("ja-JP", { month: "numeric", day: "numeric" });
+
+export default function StampCollection() {
+  const { collected, count, total, isComplete } = useStamps();
+  const percent = total === 0 ? 0 : Math.round((count / total) * 100);
+
+  return (
+    <div className="flex-1 px-5 pt-4 pb-[calc(var(--tabbar-h)+24px)]">
+      <Link
+        href="/screen/mypage"
+        className="-ml-2 inline-flex h-10 items-center gap-1 pr-3 pl-1 text-[14px] font-semibold text-muted"
+      >
+        <LuChevronLeft size={20} strokeWidth={2.2} />
+        マイページ
+      </Link>
+
+      <h1 className="mt-2 text-[22px] font-bold text-ink">スタンプコレクション</h1>
+
+      {/* 進捗 */}
+      <section className="mt-4 rounded-2xl border border-hairline bg-surface p-4 shadow-card">
+        <div className="flex items-baseline justify-between">
+          <p className="text-[13px] text-muted">
+            {isComplete ? "コンプリート！" : "集めたスタンプ"}
+          </p>
+          <p className="text-[15px] font-bold text-ink">
+            <span className="text-[22px] text-brand">{count}</span> / {total}
+          </p>
+        </div>
+        <div
+          role="progressbar"
+          aria-valuenow={count}
+          aria-valuemin={0}
+          aria-valuemax={total}
+          className="mt-3 h-2 overflow-hidden rounded-full bg-brand-soft"
+        >
+          <div className="h-full rounded-full bg-brand transition-[width]" style={{ width: `${percent}%` }} />
+        </div>
+      </section>
+
+      {/* スタンプ一覧 */}
+      <ul className="mt-6 grid grid-cols-3 gap-3">
+        {STAMP_SPOTS.map((spot) => {
+          const acquiredAt = collected[spot.markerId];
+          return (
+            <li
+              key={spot.markerId}
+              className="flex flex-col items-center gap-2 rounded-2xl border border-hairline bg-surface px-2 py-4 text-center shadow-card"
+            >
+              <span
+                className={
+                  acquiredAt
+                    ? "flex size-14 items-center justify-center rounded-full bg-brand text-white"
+                    : "flex size-14 items-center justify-center rounded-full border-2 border-dashed border-hairline text-placeholder"
+                }
+              >
+                {acquiredAt ? <LuAward size={28} strokeWidth={2} /> : <LuLock size={20} strokeWidth={2} />}
+              </span>
+              <span className="text-[12px] font-semibold leading-tight text-ink">
+                {acquiredAt ? spot.name : "？？？"}
+              </span>
+              <span className="text-[11px] text-muted">
+                {acquiredAt ? dateFormat.format(new Date(acquiredAt)) : "未獲得"}
+              </span>
+            </li>
+          );
+        })}
+      </ul>
+
+      <p className="mt-6 text-[12px] leading-relaxed text-muted">
+        スタンプはこの端末のブラウザに保存されます。ブラウザのデータを削除したり、別の端末・ブラウザで開いたりすると引き継がれません。
+      </p>
+    </div>
+  );
+}
