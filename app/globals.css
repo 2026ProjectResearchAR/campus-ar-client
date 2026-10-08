@@ -1,43 +1,81 @@
 @import "tailwindcss";
 
+/*
+ * ライトテーマ専用のアプリなので、OS のダークモードで外枠だけ黒くならないよう
+ * 背景は常に canvas に揃える。
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  color-scheme: light;
+  /* 固定タブバーの占有高さ (コンテンツの下余白・通知位置の基準) */
+  --tabbar-h: calc(88px + env(safe-area-inset-bottom));
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  /* Geist は欧文のみなので、和文はOS標準のゴシックにフォールバックさせる */
+  --font-sans:
+    var(--font-geist-sans), "Hiragino Sans", "Hiragino Kaku Gothic ProN",
+    "Noto Sans JP", "Yu Gothic UI", Meiryo, sans-serif;
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
-}
-
 /* ---------------------------------------------------------------
- * ui_design/ui.pen のデザイントークン
- * (.pen の fill / stroke / effect の値をそのまま持ってきている)
+ * デザイントークン (ui_design/ui.pen をベースに調整)
  * --------------------------------------------------------------- */
 @theme {
-  --color-brand: #f50000; /* アクセント赤: chip / pin / タブバーの丸 */
-  --color-canvas: #fff9f5; /* 画面の下地 (frame の fill) */
-  --color-hairline: #cbd6dc; /* カード・チップの枠線 */
-  --color-placeholder: #c5ccd0; /* 検索プレースホルダー */
-  --color-ink: #1e1e1e; /* アイコンの stroke */
+  /* 龍谷レッド。原色の #F50000 は面積が大きいと強すぎるため一段落とした */
+  --color-brand: #c8161d;
+  --color-brand-strong: #a50f15; /* 押下時 */
+  --color-brand-soft: #fcefef; /* 赤系の薄い面 (選択中の行・お知らせ) */
+  --color-canvas: #fbf8f6; /* 画面の下地 */
+  --color-surface: #ffffff; /* カード・バー */
+  --color-hairline: #e4e7ea; /* 枠線 */
+  --color-placeholder: #a3abb2; /* プレースホルダー (白地で可読なコントラスト) */
+  --color-ink: #1f2328; /* 本文・アイコン */
+  --color-muted: #646c75; /* 補足テキスト */
   --color-locator: #0085cd; /* 現在地マーカー */
   --color-overlay: #434343; /* スキャン画面のガイドバナー */
 
-  /* effect: shadow / offset(0,4) / blur 3.5 / #0000000d */
-  --shadow-card: 0 4px 3.5px rgb(0 0 0 / 0.05);
+  /* 2 段の影: 近い輪郭 + 遠いぼかし */
+  --shadow-card: 0 1px 2px rgb(31 35 40 / 0.06), 0 2px 8px rgb(31 35 40 / 0.04);
+  --shadow-float:
+    0 2px 4px rgb(31 35 40 / 0.06), 0 8px 24px rgb(31 35 40 / 0.1);
+}
+
+html {
+  /* 画面外の要素で横スクロール・縮小表示が起きないようにする保険 */
+  overflow-x: clip;
+  /* 横向きにしたとき iOS が勝手に文字を拡大しないようにする */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  overflow-x: clip;
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  line-height: 1.6;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ダブルタップ拡大の待ち時間をなくし、タップの反応を速くする */
+a,
+button,
+input,
+label {
+  touch-action: manipulation;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
 }
