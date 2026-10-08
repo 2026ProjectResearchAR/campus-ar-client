@@ -4,6 +4,7 @@ import styles from './page.module.css';
 import { FaSearch } from "react-icons/fa";
 import { LuMapPin } from "react-icons/lu";
 import NavBar from '@/componets/NavBar';
+import HomeEventCard from '@/componets/HomeEventCard';
 
 
 export default function HomePage() {
@@ -61,14 +62,7 @@ export default function HomePage() {
         </Link>
 
         {/* 下部案内カード */}
-        <div className="bg-[#fff5f5] border border-[#ffe0e0] rounded-xl p-4 mt-5 text-left">
-          <div className="text-[#c8161d] font-bold text-xs mb-1.5 flex items-center gap-1">
-            オープンキャンパス開催中！
-          </div>
-          <p className="text-[11px] text-gray-600 leading-relaxed margin-0">
-            研究室前のマーカーにスマホの背面をタッチすると研究室ごとの情報が表示されます✨
-          </p>
-        </div>
+        <HomeEventCard />
 
       </main>
     </div>
