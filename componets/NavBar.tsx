@@ -52,11 +52,8 @@ export default function NavBar(props: NavBarProps) {
         <div className={`sticky top-0 z-40 mx-auto w-full max-w-[430px] pt-[env(safe-area-inset-top)] border-b border-hairline text-ink ${props.bgColor || 'bg-surface/95 backdrop-blur'}`}>
             {/* 1. ヘッダー: 高さ 56px / 左右 16px */}
             <header className="flex h-14 items-center justify-between pl-4 pr-2">
-                <Link href="/" className="flex min-w-0 items-center gap-2.5 no-underline">
-                    <img src="/ryukoku-logo-transparent.png" alt="龍谷大学" className="size-7 shrink-0 object-contain" />
-                    <span className="truncate text-[13px] font-bold tracking-wide text-brand">
-                        知能情報メディア課程 研究室ガイド
-                    </span>
+                <Link href="/" aria-label="ホーム" className="flex items-center no-underline">
+                    <img src="/ryukoku-logo-transparent.png" alt="" className="size-7 shrink-0 object-contain" />
                 </Link>
                 {/* ハンバーガーメニュー (タップ領域 44px) */}
                 <button
