@@ -11,7 +11,7 @@ type NavBarProps = {
 }
 
 const MENU_ITEMS = [
-    { href: "/", label: "ホーム", icon: LuHouse, exact: true },
+    { href: "/", label: "スタート", icon: LuHouse, exact: true },
     { href: "/screen/map", label: "マップ", icon: LuMap, exact: false },
     { href: "/screen/scan", label: "スキャン", icon: LuScanLine, exact: false },
     { href: "/screen/mypage", label: "マイページ", icon: LuUser, exact: false },
@@ -52,7 +52,7 @@ export default function NavBar(props: NavBarProps) {
         <div className={`sticky top-0 z-40 mx-auto w-full max-w-[430px] pt-[env(safe-area-inset-top)] border-b border-hairline text-ink ${props.bgColor || 'bg-surface/95 backdrop-blur'}`}>
             {/* 1. ヘッダー: 高さ 56px / 左右 16px */}
             <header className="flex h-14 items-center justify-between pl-4 pr-2">
-                <Link href="/" aria-label="ホーム" className="flex items-center no-underline">
+                <Link href="/" aria-label="スタート" className="flex items-center no-underline">
                     <img src="/ryukoku-logo-transparent.png" alt="" className="size-7 shrink-0 object-contain" />
                 </Link>
                 {/* ハンバーガーメニュー (タップ領域 44px) */}

@@ -1,16 +1,17 @@
+import Image from 'next/image';
 import Link from 'next/link';
 // モジュールも一緒に読み込む
 import styles from './page.module.css';
-import { FaSearch } from "react-icons/fa";
 import { LuChevronRight, LuMapPin } from "react-icons/lu";
 
 
-export default function HomePage() {
+export default function StartPage() {
   return (
     // w-full max-w-[430px]: 幅100%かつ最大430px
     // mx-auto: 左右中央揃え (margin: 0 auto)
     <div className="mx-auto w-full max-w-[430px] flex-1 bg-canvas pb-12 text-ink">
 
+      {/* スタート画面: キャッチコピー → キャンパス画像 → はじめる (→ マップ) */}
       {/* 2. メインコンテンツ (左右 20px / 要素間 16〜24px) */}
       <main className="px-5 pt-6">
 
@@ -22,28 +23,19 @@ export default function HomePage() {
 
         {/* キャンパス画像エリア */}
         {/* overflow-hidden: 画像の角を丸めるため */}
-        <div className="mt-5 flex aspect-[16/9] w-full items-center justify-center overflow-hidden rounded-2xl border border-hairline bg-surface">
-          <span className="text-[12px] text-placeholder">[ キャンパス画像: 100% × auto ]</span>
-        </div>
-
-        {/* 検索バー */}
-        <div className="mt-5 flex h-12 items-center rounded-full border border-hairline bg-surface pl-5 pr-1.5 shadow-card focus-within:border-brand/40">
-          {/* 16px 未満だと iOS Safari がフォーカス時にズームするため text-base */}
-          <input
-            type="text"
-            placeholder="教授名・研究分野を検索"
-            className={`w-full bg-transparent text-base text-ink placeholder:text-[14px] placeholder:text-placeholder ${styles.searchInput}`}
+        <div className="relative mt-5 aspect-[16/9] w-full overflow-hidden rounded-2xl border border-hairline bg-surface">
+          {/* TODO: キャンパスの写真が用意できたら差し替える (現状はキャンパスマップの画像を使用) */}
+          <Image
+            src="/seta_b_l_2026.jpg"
+            alt="龍谷大学 瀬田キャンパス"
+            fill
+            sizes="(max-width: 430px) 100vw, 430px"
+            loading="eager"
+            className="object-cover"
           />
-          <button
-            type="button"
-            aria-label="検索"
-            className="ml-2 flex size-9 shrink-0 items-center justify-center rounded-full bg-brand text-[14px] text-white transition-colors active:bg-brand-strong"
-          >
-            <FaSearch />
-          </button>
         </div>
 
-        {/* 赤いメインボタン（Tailwind + モジュールの併用例） */}
+        {/* スタートボタン: マップ画面へ進む */}
         {/* `${styles.customGlow}` でモジュールの影を追加 */}
         <Link
           href="/screen/map"
@@ -54,8 +46,8 @@ export default function HomePage() {
             <LuMapPin />
           </span>
           <span className="min-w-0 flex-1">
-            <span className="block text-[16px] font-bold leading-snug">キャンパスマップを見る</span>
-            <span className="mt-0.5 block text-[12px] leading-snug text-white/85">研究室の場所を確認できます</span>
+            <span className="block text-[18px] font-bold leading-snug">はじめる</span>
+            <span className="mt-0.5 block text-[12px] leading-snug text-white/85">キャンパスマップから研究室を探しましょう</span>
           </span>
           <LuChevronRight size={22} className="shrink-0 text-white/80" />
         </Link>
