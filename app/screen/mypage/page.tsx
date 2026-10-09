@@ -32,7 +32,11 @@ const MENU: MenuItem[] = [
   { label: "避難ガイド・安全情報", icon: <LuShield size={20} strokeWidth={2} /> },
   { label: "お気に入り", icon: <LuHeart size={20} strokeWidth={2} /> },
   { label: "メモ", icon: <LuSquarePen size={20} strokeWidth={2} /> },
-  { label: "イベント案内", icon: <LuCalendar size={20} strokeWidth={2} /> },
+  {
+    label: "イベント案内",
+    icon: <LuCalendar size={20} strokeWidth={2} />,
+    href: "/screen/mypage/events",
+  },
   { label: "設定", icon: <LuSettings size={20} strokeWidth={2} /> },
 ];
 
