@@ -58,19 +58,41 @@ export function useLocalStorage<T>(
   }, [raw, initialValue]);
 
   const setValue = useCallback(
-    (next: T | ((prev: T) => T)) => {
-      try {
-        const currentRaw = readRaw(fullKey);
-        const prev = currentRaw === null ? initialValue : (JSON.parse(currentRaw) as T);
-        const resolved = typeof next === "function" ? (next as (p: T) => T)(prev) : next;
-        window.localStorage.setItem(fullKey, JSON.stringify(resolved));
-        window.dispatchEvent(new Event(LOCAL_EVENT));
-      } catch {
-        // 容量超過・プライベートモード等では保存しない
-      }
-    },
-    [fullKey, initialValue],
+    (next: T | ((prev: T) => T)) => writeLocalStorage(key, initialValue, next),
+    [key, initialValue],
   );
 
   return [value, setValue] as const;
+}
+
+/** localStorage の値を読む (フックの外から使う用)。読めなければ initialValue */
+export function readLocalStorage<T>(key: string, initialValue: T): T {
+  if (typeof window === "undefined") return initialValue;
+  const raw = readRaw(STORAGE_PREFIX + key);
+  if (raw === null) return initialValue;
+  try {
+    return JSON.parse(raw) as T;
+  } catch {
+    return initialValue;
+  }
+}
+
+/**
+ * localStorage へ書き込み、同じキーを使っている useLocalStorage へ通知する
+ * (フックの外、非同期処理の完了後などから使う用)。
+ */
+export function writeLocalStorage<T>(
+  key: string,
+  initialValue: T,
+  next: T | ((prev: T) => T),
+): void {
+  if (typeof window === "undefined") return;
+  try {
+    const prev = readLocalStorage(key, initialValue);
+    const resolved = typeof next === "function" ? (next as (p: T) => T)(prev) : next;
+    window.localStorage.setItem(STORAGE_PREFIX + key, JSON.stringify(resolved));
+    window.dispatchEvent(new Event(LOCAL_EVENT));
+  } catch {
+    // 容量超過・プライベートモード等では保存しない
+  }
 }
