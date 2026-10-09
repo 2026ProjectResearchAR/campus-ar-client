@@ -3,7 +3,8 @@
  *
  * 基準点 (緯度経度と画像上の % 位置の対応) から 2D アフィン変換を求める。
  * キャリブレーションは MAP_CONTROL_POINTS の値を実測値に書き換えるだけでよい。
- * 画像は北が上であることを前提とする。基準点は互いに一直線上にならない 3 点を指定する。
+ * アフィン変換なので画像が回転していてもよい (このマップは北が右下 約 37° を向いている)。
+ * 基準点は互いに一直線上にならない 3 点を指定する。
  */
 
 export type LatLng = { lat: number; lng: number };
@@ -11,13 +12,14 @@ export type LatLng = { lat: number; lng: number };
 export type MapPercent = { x: number; y: number };
 export type ControlPoint = { geo: LatLng; map: MapPercent };
 
-// TODO: 実測値で要キャリブレーション
-// 現状は瀬田キャンパス (約 34.964N, 135.940E) 付近を、東西約 820m x 南北約 615m と
-// 仮定した暫定値。現地で GPS 値と画像上の位置を測って差し替えること。
+// OpenStreetMap 上の建物 21 棟 (1〜9号館・図書館・体育館・SETA DOME など) の中心座標と、
+// 画像上の位置の対応から最小二乗で求めた変換を、画像上の 3 点で表したもの。
+// 誤差は 10m 程度。画像の方位記号 (北が右下) と縮尺 (100m ≒ 180px) とも一致する。
+// 現地で GPS 値と画像上の位置を測れば、さらに精度を上げられる。
 export const MAP_CONTROL_POINTS: [ControlPoint, ControlPoint, ControlPoint] = [
-  { geo: { lat: 34.96625, lng: 135.9364 }, map: { x: 10, y: 10 } },
-  { geo: { lat: 34.96625, lng: 135.9436 }, map: { x: 90, y: 10 } },
-  { geo: { lat: 34.96185, lng: 135.9364 }, map: { x: 10, y: 90 } },
+  { geo: { lat: 34.960882, lng: 135.940281 }, map: { x: 10, y: 10 } },
+  { geo: { lat: 34.964684, lng: 135.936759 }, map: { x: 90, y: 10 } },
+  { geo: { lat: 34.963086, lng: 135.943725 }, map: { x: 10, y: 90 } },
 ];
 
 type Affine = { a: number; b: number; c: number; d: number; e: number; f: number };
@@ -68,8 +70,13 @@ export function isInsideMap({ x, y }: MapPercent): boolean {
 /** メートルが画像の横幅の何 % に当たるか (精度円の半径換算用) */
 export function metersToMapPercentX(meters: number): number {
   const [p1, p2] = MAP_CONTROL_POINTS;
+  // 画像が回転しているので、p1-p2 間 (画像上は水平) の距離は緯度・経度の両方から求める
+  const metersPerDegLat = 111320;
   const metersPerDegLng = 111320 * Math.cos((p1.geo.lat * Math.PI) / 180);
-  const dxMeters = Math.abs(p2.geo.lng - p1.geo.lng) * metersPerDegLng;
+  const dxMeters = Math.hypot(
+    (p2.geo.lat - p1.geo.lat) * metersPerDegLat,
+    (p2.geo.lng - p1.geo.lng) * metersPerDegLng,
+  );
   const dxPercent = Math.abs(p2.map.x - p1.map.x);
   return (meters / dxMeters) * dxPercent;
 }
