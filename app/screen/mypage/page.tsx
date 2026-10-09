@@ -33,7 +33,11 @@ const MENU: MenuItem[] = [
   { label: "お気に入り", icon: <LuHeart size={20} strokeWidth={2} /> },
   { label: "メモ", icon: <LuSquarePen size={20} strokeWidth={2} /> },
   { label: "イベント案内", icon: <LuCalendar size={20} strokeWidth={2} /> },
-  { label: "設定", icon: <LuSettings size={20} strokeWidth={2} /> },
+  {
+    label: "設定",
+    icon: <LuSettings size={20} strokeWidth={2} />,
+    href: "/screen/mypage/settings",
+  },
 ];
 
 export const metadata: Metadata = {
