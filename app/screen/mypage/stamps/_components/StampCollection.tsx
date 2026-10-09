@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { LuAward, LuChevronLeft, LuLock } from "react-icons/lu";
+import { LuAward, LuChevronLeft, LuLock, LuTrophy } from "react-icons/lu";
 
 import { STAMP_SPOTS, useStamps } from "@/lib/stamps";
 
@@ -43,6 +43,21 @@ export default function StampCollection() {
           <div className="h-full rounded-full bg-brand transition-[width]" style={{ width: `${percent}%` }} />
         </div>
       </section>
+
+      {/* コンプリート時のお祝い */}
+      {isComplete && (
+        <section className="mt-4 flex items-center gap-3 rounded-2xl bg-brand p-4 text-white shadow-card">
+          <span className="flex size-12 shrink-0 animate-stamp-pop items-center justify-center rounded-full bg-white/15">
+            <LuTrophy size={26} strokeWidth={2} />
+          </span>
+          <div>
+            <p className="text-[15px] font-bold">スタンプラリー コンプリート！</p>
+            <p className="mt-0.5 text-[12px] text-white/85">
+              全{total}個のスタンプを集めました。キャンパス探検おつかれさまでした！
+            </p>
+          </div>
+        </section>
+      )}
 
       {/* スタンプ一覧 */}
       <ul className="mt-6 grid grid-cols-3 gap-3">
