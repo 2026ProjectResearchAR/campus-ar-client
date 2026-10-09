@@ -43,6 +43,7 @@ npm run dev
 
 `.env.example` をコピーして `.env.local` を作成し、値を設定してください。`.env.local` はコミットしないでください。
 `NEXT_PUBLIC_` で始まる変数はブラウザに公開されるため、秘密情報は入れないでください。
+本番ビルド（Cloudflare Workers へのデプロイ含む）では、コミット済みの `.env.production` の値がビルド時に JS へ埋め込まれます。
 
 ## バックエンド (campus-ar-api) との関係
 
