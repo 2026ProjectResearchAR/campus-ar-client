@@ -19,6 +19,9 @@ import {
   latLngToMapPercent,
   metersToMapPercentX,
 } from "@/lib/geo";
+import { matchesQuery, normalizeSearchText } from "@/lib/search";
+import { useLabSearch } from "@/hooks/useLabSearch";
+import MapSearchResults, { type SearchSpot } from "@/componets/MapSearchResults";
 
 /**
  * マップ画面 (ui.pen frame "Map")
@@ -262,8 +265,30 @@ export default function MapPage() {
     ? "現在地がキャンパス外のため表示できません"
     : (GEO_NOTICE[geo.status] ?? null);
 
-  // 選択されたカテゴリに応じてピンをフィルタリング
+  // 検索 (建物・施設名 + 研究室の教授名・研究分野)
+  const [query, setQuery] = useState("");
+  const [resultsOpen, setResultsOpen] = useState(false);
+  const searching = query.trim() !== "";
+  const labSearch = useLabSearch(query);
+  const findSpot = (buildingName: string) =>
+    spotData.find(
+      (s) => normalizeSearchText(s.name) === normalizeSearchText(buildingName),
+    ) ?? null;
+  const nameMatchedSpots = searching
+    ? spotData.filter((spot) => matchesQuery(spot.name, query))
+    : [];
+  // 名前が一致した建物 + 一致した研究室がある建物
+  const searchMatchedIds = new Set<number>(nameMatchedSpots.map((s) => s.id));
+  if (labSearch.status === "ready") {
+    for (const lab of labSearch.results) {
+      const spot = findSpot(lab.buildingName);
+      if (spot) searchMatchedIds.add(spot.id);
+    }
+  }
+
+  // 選択されたカテゴリと検索キーワードに応じてピンをフィルタリング
   const filteredSpots = spotData.filter((spot) => {
+    if (searching && !searchMatchedIds.has(spot.id)) return false;
     if (!selectedOption || selectedOption === "すべて") return true;
     return spot.category === selectedOption;
   });
@@ -281,6 +306,16 @@ export default function MapPage() {
         }
       : null;
 
+  // 検索結果を選ぶ: その建物のピンをマップ中央に表示する
+  const selectResult = (spot: SearchSpot) => {
+    const target = spotData.find((s) => s.id === spot.id);
+    if (!target) return;
+    setQuery(target.name);
+    setResultsOpen(false);
+    setSelectedOption("すべて");
+    centerOn((target.x / 100) * MAP_SIZE.w, (target.y / 100) * MAP_SIZE.h);
+  };
+
   const handleOptionClick = (option: string) => {
     if (selectedOption === option) {
       setSelectedOption(null);
@@ -292,16 +327,42 @@ export default function MapPage() {
   return (
     <div className="flex flex-1 flex-col pt-3">
       {/* 検索バー */}
-      <div className="px-4">
+      <div
+        className="relative mx-4"
+        onBlur={(e) => {
+          if (!e.currentTarget.contains(e.relatedTarget)) setResultsOpen(false);
+        }}
+      >
         <label className="flex h-11 items-center gap-2.5 rounded-full border border-hairline bg-surface px-4 shadow-card focus-within:border-brand/40">
           <LuSearch size={18} strokeWidth={2.2} className="shrink-0 text-muted" />
           {/* 16px 未満だと iOS Safari がフォーカス時にズームするため text-base */}
           <input
             type="search"
-            placeholder="研究室・施設を検索"
+            value={query}
+            onChange={(e) => {
+              setQuery(e.target.value);
+              setResultsOpen(true);
+            }}
+            onFocus={() => setResultsOpen(true)}
+            onKeyDown={(e) => {
+              if (e.key === "Escape") setResultsOpen(false);
+            }}
+            aria-label="研究室・施設を検索"
+            placeholder="教授名・研究分野・施設を検索"
             className="w-full bg-transparent text-base text-ink outline-none placeholder:text-[14px] placeholder:text-placeholder"
           />
         </label>
+
+        {/* 検索結果 */}
+        {searching && resultsOpen && (
+          <MapSearchResults
+            query={query}
+            spots={nameMatchedSpots}
+            labs={labSearch}
+            findSpot={findSpot}
+            onSelect={selectResult}
+          />
+        )}
       </div>
 
       {/* フィルターボタンエリア */}
