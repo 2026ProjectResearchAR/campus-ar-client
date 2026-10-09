@@ -21,6 +21,11 @@ export type StampSpot = {
  */
 export const STAMP_SPOTS: StampSpot[] = [{ markerId: "hiro-placeholder", name: "テストスポット" }];
 
+/** マーカーIDに対応するスタンプ対象スポット (対象外なら undefined) */
+export function findStampSpot(markerId: string): StampSpot | undefined {
+  return STAMP_SPOTS.find((s) => s.markerId === markerId);
+}
+
 /** markerId -> 獲得日時 (ISO 8601) */
 export type CollectedStamps = Record<string, string>;
 
@@ -34,7 +39,7 @@ export function useStamps() {
   const collect = useCallback(
     (markerId: string): boolean => {
       if (collected[markerId]) return false;
-      if (!STAMP_SPOTS.some((s) => s.markerId === markerId)) return false;
+      if (!findStampSpot(markerId)) return false;
       setCollected((prev) =>
         prev[markerId] ? prev : { ...prev, [markerId]: new Date().toISOString() },
       );

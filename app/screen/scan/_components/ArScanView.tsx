@@ -8,6 +8,8 @@ import { useArMarker } from "@/hooks/useArMarker";
 import { findModelUrl, getSpotByMarkerId, type Spot } from "@/lib/spots";
 import type { ShowModelMessage } from "@/types/arMarker";
 
+import StampOverlay from "./StampOverlay";
+
 type SpotResult = { kind: "ok"; spot: Spot | null } | { kind: "error"; error: unknown };
 
 /**
@@ -62,6 +64,8 @@ export default function ArScanView() {
         className="w-full h-full border-0 absolute inset-0"
         allow="camera;"
       />
+      {/* スタンプラリー: スタンプ対象のマーカーなら獲得演出を表示する */}
+      <StampOverlay />
       {markerId !== null && (
         <div className="absolute inset-x-3 bottom-3 rounded-2xl bg-surface/95 px-4 py-3 shadow-float">
           {!result ? (
