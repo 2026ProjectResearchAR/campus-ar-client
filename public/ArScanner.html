@@ -8,10 +8,65 @@
   </head>
   <body style="margin: 0; overflow: hidden;">
     <a-scene embedded arjs="sourceType: webcam;">
-      <a-marker preset="hiro">
-        <a-box position="0 0.5 0" material="color: red;"></a-box>
+      <a-marker preset="hiro" data-marker-id="hiro">
+        <!-- API から 3D モデルが届くまでの仮表示 -->
+        <a-box data-placeholder position="0 0.5 0" material="color: red;"></a-box>
+        <a-entity data-model position="0 0 0"></a-entity>
       </a-marker>
       <a-entity camera></a-entity>
     </a-scene>
+    <script>
+      // マーカーを追加する場合は data-marker-id を付けた <a-marker> を増やし、
+      // 必要なら MARKER_IDS で送信用IDへ対応付ける (未指定なら data-marker-id をそのまま使う)
+      var MARKER_IDS = { hiro: "hiro-placeholder" };
+      var targetOrigin = window.location.origin;
+
+      function markerIdOf(el) {
+        var key = el.getAttribute("data-marker-id");
+        return MARKER_IDS[key] || key;
+      }
+
+      function notify(type, el) {
+        window.parent.postMessage({ type: type, markerId: markerIdOf(el) }, targetOrigin);
+      }
+
+      document.querySelectorAll("a-marker[data-marker-id]").forEach(function (el) {
+        el.addEventListener("markerFound", function () { notify("markerFound", el); });
+        el.addEventListener("markerLost", function () { notify("markerLost", el); });
+
+        // モデルの読み込みに失敗したら仮表示に戻し、親ウィンドウへ知らせる
+        var model = el.querySelector("[data-model]");
+        if (model) {
+          model.addEventListener("model-error", function () {
+            var placeholder = el.querySelector("[data-placeholder]");
+            if (placeholder) placeholder.setAttribute("visible", true);
+            notify("modelError", el);
+          });
+        }
+      });
+
+      // 親ウィンドウが spots API から取得した 3D モデル (.glb) をマーカー上に表示する
+      window.addEventListener("message", function (event) {
+        if (event.origin !== targetOrigin) return;
+        var data = event.data;
+        if (!data || data.type !== "showModel" || typeof data.markerId !== "string") return;
+
+        document.querySelectorAll("a-marker[data-marker-id]").forEach(function (el) {
+          if (markerIdOf(el) !== data.markerId) return;
+          var model = el.querySelector("[data-model]");
+          var placeholder = el.querySelector("[data-placeholder]");
+          if (!model) return;
+
+          if (typeof data.url === "string" && data.url) {
+            if (model.getAttribute("gltf-model") === data.url) return;
+            model.setAttribute("gltf-model", data.url);
+            if (placeholder) placeholder.setAttribute("visible", false);
+          } else {
+            model.removeAttribute("gltf-model");
+            if (placeholder) placeholder.setAttribute("visible", true);
+          }
+        });
+      });
+    </script>
   </body>
 </html>

@@ -1,19 +1,12 @@
 import type { Metadata } from "next";
 
+import ArScanView from "./_components/ArScanView";
+
 export const metadata: Metadata = {
   title: "ARスキャン",
   description: "カメラでARマーカーを読み取り、研究室や施設の情報を表示します。",
 };
 
 export default function ScanPage() {
-  return (
-    <div className="relative w-full flex-1 h-full ">
-      {/* Reactの変換を受けないよう iframe で純粋なHTMLを読み込む */}
-      <iframe
-        src="/ArScanner.html"
-        className="w-full h-full border-0 absolute inset-0"
-        allow="camera;"
-      />
-    </div>
-  );
+  return <ArScanView />;
 }
