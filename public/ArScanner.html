@@ -5,11 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@ar-js-org/ar.js@3.4.8/aframe/build/aframe-ar.js"></script>
+    <!-- QR コード認識用ライブラリ (jsQR) -->
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
     <script>
       /**
        * 右手系 Z-up から 右手系 Y-up への座標系変換コンポーネント
-       * モデルがロードされた時点で Three.js のメッシュに対して X 軸回転を適用する
-       * デフォルト: -90度 (X軸周りに -90° 回転して Z軸を Y軸(上) へ向ける)
        */
       AFRAME.registerComponent("right-z-to-y-up", {
         schema: {
@@ -22,15 +22,9 @@
             var model = e.detail.model || el.getObject3D("mesh");
             if (model) {
               model.rotation.x = THREE.MathUtils.degToRad(self.data.deg);
-              console.log("[AR] Converted Right-Handed Z-up to Y-up (rotation.x = " + self.data.deg + " deg)");
+              console.log("[AR] Converted Right-Handed Z-up to Y-up:", self.data.deg, "deg");
             }
           });
-        },
-        update: function () {
-          var model = this.el.getObject3D("mesh");
-          if (model) {
-            model.rotation.x = THREE.MathUtils.degToRad(this.data.deg);
-          }
         },
       });
     </script>
@@ -51,7 +45,7 @@
           opacity="0.8"
         ></a-ring>
 
-        <!-- 3D モデル本体 (GLB): right-z-to-y-up コンポーネントを適用 -->
+        <!-- 3D モデル本体 (GLB) -->
         <a-entity
           data-model
           right-z-to-y-up="deg: -90"
@@ -109,7 +103,6 @@
           if (!model) return;
 
           if (typeof data.url === "string" && data.url) {
-            // すでに同じモデルが設定されている場合は再設定しない
             if (model.getAttribute("gltf-model") === data.url) return;
             console.log("[AR] Applying gltf-model:", data.url);
             model.setAttribute("gltf-model", data.url);
@@ -119,6 +112,55 @@
             model.setAttribute("visible", false);
           }
         });
+      });
+
+      // ------------------------------------------------------------------
+      // QR コードリアルタイム検出ループ (AR.js のカメラ映像から jsQR で認識)
+      // ------------------------------------------------------------------
+      var qrCanvas = document.createElement("canvas");
+      var qrCtx = qrCanvas.getContext("2d", { willReadFrequently: true });
+      var lastQrCheck = 0;
+      var lastReportedQr = null;
+
+      function scanQRCodeLoop() {
+        requestAnimationFrame(scanQRCodeLoop);
+
+        var now = Date.now();
+        if (now - lastQrCheck < 250) return; // 250ms 間隔でチェック
+        lastQrCheck = now;
+
+        var video = document.querySelector("#arjs-video") || document.querySelector("video");
+        if (!video || video.readyState < 2 || video.videoWidth === 0) return;
+
+        // 計算負荷軽減のため最大幅 640px にスケールダウン
+        var maxDim = 640;
+        var scale = Math.min(1, maxDim / Math.max(video.videoWidth, video.videoHeight));
+        qrCanvas.width = Math.floor(video.videoWidth * scale);
+        qrCanvas.height = Math.floor(video.videoHeight * scale);
+
+        qrCtx.drawImage(video, 0, 0, qrCanvas.width, qrCanvas.height);
+        var imageData = qrCtx.getImageData(0, 0, qrCanvas.width, qrCanvas.height);
+
+        if (window.jsQR) {
+          var code = window.jsQR(imageData.data, imageData.width, imageData.height, {
+            inversionAttempts: "dontInvert",
+          });
+          if (code && code.data) {
+            if (code.data !== lastReportedQr) {
+              lastReportedQr = code.data;
+              console.log("[AR] QR Code detected:", code.data);
+              // 親ウィンドウへ QR 検出イベントを送信
+              window.parent.postMessage({ type: "qrFound", url: code.data }, "*");
+              setTimeout(function () {
+                lastReportedQr = null;
+              }, 4000);
+            }
+          }
+        }
+      }
+
+      window.addEventListener("load", function () {
+        setTimeout(scanQRCodeLoop, 1500);
       });
     </script>
   </body>
