@@ -1,6 +1,6 @@
 import { apiFetch } from "./api";
 
-/** campus-ar-api の ARアセット。3Dモデルは type="3d_model" で url に R2 の公開URLが入る */
+/** campus-ar-api の ARアセット。3Dモデルは type="model" または "3d_model" */
 export type ArAsset = { type: string; url: string };
 
 /** GET /api/v1/spots/{marker_id} のスポット */
@@ -25,7 +25,14 @@ export async function getSpotByMarkerId(markerId: string, signal?: AbortSignal):
 
 /** スポットの 3D モデル (.glb) のURL。なければ null */
 export function findModelUrl(spot: Spot): string | null {
-  return spot.ar_assets.find((a) => a.type === "model" || a.type === "3d_model")?.url ?? null;
+  const raw = spot.ar_assets.find((a) => a.type === "model" || a.type === "3d_model")?.url ?? null;
+  if (!raw) return null;
+  // R2 などの外部ストレージURLは CORS 制約を回避するため next.config.ts の /models/:path 経由で取得する
+  const r2Prefix = "https://pub-d1017758a7a442dcb2145a90884f4a74.r2.dev/";
+  if (raw.startsWith(r2Prefix)) {
+    return `/models/${raw.slice(r2Prefix.length)}`;
+  }
+  return raw;
 }
 
 /** お気に入り・メモで参照するスポットの基本情報 (マップのピンと id を揃える) */

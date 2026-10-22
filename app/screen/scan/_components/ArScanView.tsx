@@ -7,7 +7,6 @@ import LoadingState from "@/components/LoadingState";
 import { useArMarker } from "@/hooks/useArMarker";
 import { findModelUrl, getSpotByMarkerId, type Spot } from "@/lib/spots";
 import type { ShowModelMessage } from "@/types/arMarker";
-
 import StampOverlay from "./StampOverlay";
 
 type SpotResult = { kind: "ok"; spot: Spot | null } | { kind: "error"; error: unknown };
@@ -22,27 +21,43 @@ export default function ArScanView() {
   const { markerId, modelErrorId } = useArMarker();
   // markerId -> 取得結果 (マーカーの見失い・再認識のたびに再取得しないよう保持する)
   const [results, setResults] = useState<Record<string, SpotResult>>({});
-  const hasResult = markerId !== null && markerId in results;
 
   useEffect(() => {
-    if (markerId === null || hasResult) return;
+    if (markerId === null) return;
+
+    const sendModel = (spot: Spot | null) => {
+      const url = spot ? findModelUrl(spot) : null;
+      const message: ShowModelMessage = {
+        type: "showModel",
+        markerId,
+        url,
+      };
+      // iframe 内の ARScanner にモデルURLを通知
+      iframeRef.current?.contentWindow?.postMessage(message, "*");
+    };
+
+    // すでに取得済みの結果があれば即座に iframe へ通知
+    const existing = results[markerId];
+    if (existing) {
+      if (existing.kind === "ok") {
+        sendModel(existing.spot);
+      }
+      return;
+    }
+
+    // 未取得なら spots API から取得
     const controller = new AbortController();
     getSpotByMarkerId(markerId, controller.signal)
       .then((spot) => {
         setResults((prev) => ({ ...prev, [markerId]: { kind: "ok", spot } }));
-        const message: ShowModelMessage = {
-          type: "showModel",
-          markerId,
-          url: spot ? findModelUrl(spot) : null,
-        };
-        iframeRef.current?.contentWindow?.postMessage(message, window.location.origin);
+        sendModel(spot);
       })
       .catch((error) => {
         if (controller.signal.aborted) return;
         setResults((prev) => ({ ...prev, [markerId]: { kind: "error", error } }));
       });
     return () => controller.abort();
-  }, [markerId, hasResult]);
+  }, [markerId, results]);
 
   const retry = useCallback(() => {
     if (markerId === null) return;
@@ -64,8 +79,6 @@ export default function ArScanView() {
         className="w-full h-full border-0 absolute inset-0"
         allow="camera;"
       />
-      {/* スタンプラリー: スタンプ対象のマーカーなら獲得演出を表示する */}
-      <StampOverlay />
       {markerId !== null && (
         <div className="absolute inset-x-3 bottom-3 rounded-2xl bg-surface/95 px-4 py-3 shadow-float">
           {!result ? (
@@ -88,6 +101,7 @@ export default function ArScanView() {
           )}
         </div>
       )}
+      <StampOverlay />
     </div>
   );
 }

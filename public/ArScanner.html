@@ -8,16 +8,25 @@
   </head>
   <body style="margin: 0; overflow: hidden;">
     <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;">
-      <!-- 照明設定: 3Dモデルが暗くなるのを防ぐ -->
-      <a-entity light="type: ambient; intensity: 1.2;"></a-entity>
-      <a-entity light="type: directional; intensity: 0.8;" position="1 2 1"></a-entity>
+      <!-- 照明設定: 3Dモデルを明るく照らす -->
+      <a-entity light="type: ambient; intensity: 1.5;"></a-entity>
+      <a-entity light="type: directional; intensity: 1.0;" position="1 3 2"></a-entity>
 
       <a-marker preset="hiro" data-marker-id="hiro">
-        <!-- 3D モデル配置エンティティ (初期は非表示/モデルなし) -->
+        <!-- マーカーの認識を示す基準の赤いリング -->
+        <a-ring
+          color="#c8161d"
+          radius-inner="0.45"
+          radius-outer="0.5"
+          rotation="-90 0 0"
+          opacity="0.8"
+        ></a-ring>
+
+        <!-- 3D モデル本体 (GLB) -->
         <a-entity
           data-model
-          position="0 0 0"
-          scale="0.25 0.25 0.25"
+          position="0 0.05 0"
+          scale="0.2 0.2 0.2"
           rotation="0 0 0"
         ></a-entity>
       </a-marker>
@@ -26,7 +35,6 @@
     <script>
       // Hiro マーカー検知時に三好研究室のマーカーIDへマッピング
       var MARKER_IDS = { hiro: "marker_miyoshilab" };
-      var targetOrigin = window.location.origin;
 
       function markerIdOf(el) {
         var key = el.getAttribute("data-marker-id");
@@ -34,7 +42,7 @@
       }
 
       function notify(type, el) {
-        window.parent.postMessage({ type: type, markerId: markerIdOf(el) }, targetOrigin);
+        window.parent.postMessage({ type: type, markerId: markerIdOf(el) }, "*");
       }
 
       document.querySelectorAll("a-marker[data-marker-id]").forEach(function (el) {
@@ -50,7 +58,7 @@
         var model = el.querySelector("[data-model]");
         if (model) {
           model.addEventListener("model-loaded", function () {
-            console.log("[AR] 3D Model successfully loaded for:", markerIdOf(el));
+            console.log("[AR] 3D Model successfully loaded!");
           });
           model.addEventListener("model-error", function (e) {
             console.error("[AR] 3D Model load error:", e.detail);
@@ -61,11 +69,10 @@
 
       // 親ウィンドウ (ArScanView) から 3D モデルの URL を受信したときの処理
       window.addEventListener("message", function (event) {
-        if (event.origin !== targetOrigin) return;
         var data = event.data;
         if (!data || data.type !== "showModel" || typeof data.markerId !== "string") return;
 
-        console.log("[AR] Received showModel message:", data);
+        console.log("[AR] showModel message received:", data.url);
 
         document.querySelectorAll("a-marker[data-marker-id]").forEach(function (el) {
           if (markerIdOf(el) !== data.markerId) return;
@@ -73,11 +80,12 @@
           if (!model) return;
 
           if (typeof data.url === "string" && data.url) {
-            console.log("[AR] Setting gltf-model URL:", data.url);
+            // すでに同じモデルが設定されている場合は再設定しない
+            if (model.getAttribute("gltf-model") === data.url) return;
+            console.log("[AR] Applying gltf-model:", data.url);
             model.setAttribute("gltf-model", data.url);
             model.setAttribute("visible", true);
           } else {
-            console.log("[AR] Removing gltf-model");
             model.removeAttribute("gltf-model");
             model.setAttribute("visible", false);
           }
