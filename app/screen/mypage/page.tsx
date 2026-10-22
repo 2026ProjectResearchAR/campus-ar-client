@@ -10,7 +10,7 @@ import {
   LuSquarePen,
 } from "react-icons/lu";
 
-import ApiHealthCheck from "@/componets/ApiHealthCheck";
+import ApiHealthCheck from "@/components/ApiHealthCheck";
 
 /**
  * マイページ (ui.pen frame "My page")

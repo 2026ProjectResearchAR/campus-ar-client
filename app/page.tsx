@@ -3,7 +3,7 @@ import Link from 'next/link';
 // モジュールも一緒に読み込む
 import styles from './page.module.css';
 import { LuChevronRight, LuMapPin } from "react-icons/lu";
-import EventNoticeCard from '@/componets/EventNoticeCard';
+import EventNoticeCard from '@/components/EventNoticeCard';
 
 
 export default function StartPage() {

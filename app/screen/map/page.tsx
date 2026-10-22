@@ -21,7 +21,7 @@ import {
 } from "@/lib/geo";
 import { matchesQuery, normalizeSearchText } from "@/lib/search";
 import { useLabSearch } from "@/hooks/useLabSearch";
-import MapSearchResults, { type SearchSpot } from "@/componets/MapSearchResults";
+import MapSearchResults, { type SearchSpot } from "@/components/MapSearchResults";
 import type { FavoriteTarget } from "@/lib/favorites";
 import SpotCard from "./_components/SpotCard";
 

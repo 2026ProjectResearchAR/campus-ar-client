@@ -2,7 +2,7 @@
 
 import { LuX } from "react-icons/lu";
 
-import FavoriteButton from "@/componets/FavoriteButton";
+import FavoriteButton from "@/components/FavoriteButton";
 import type { FavoriteTarget } from "@/lib/favorites";
 
 /**

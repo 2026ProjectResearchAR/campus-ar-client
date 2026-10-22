@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { LuChevronLeft, LuHeart, LuMap } from "react-icons/lu";
 
-import FavoriteButton from "@/componets/FavoriteButton";
+import FavoriteButton from "@/components/FavoriteButton";
 import { useFavorites } from "@/lib/favorites";
 
 const dateFormat = new Intl.DateTimeFormat("ja-JP", { month: "numeric", day: "numeric" });

@@ -2,8 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import ErrorState from "@/componets/ErrorState";
-import LoadingState from "@/componets/LoadingState";
+import ErrorState from "@/components/ErrorState";
+import LoadingState from "@/components/LoadingState";
 import { useArMarker } from "@/hooks/useArMarker";
 import { findModelUrl, getSpotByMarkerId, type Spot } from "@/lib/spots";
 import type { ShowModelMessage } from "@/types/arMarker";

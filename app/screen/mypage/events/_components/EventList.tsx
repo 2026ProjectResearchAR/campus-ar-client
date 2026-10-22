@@ -3,9 +3,9 @@
 import Link from "next/link";
 import { LuChevronLeft } from "react-icons/lu";
 
-import EmptyState from "@/componets/EmptyState";
-import ErrorState from "@/componets/ErrorState";
-import LoadingState from "@/componets/LoadingState";
+import EmptyState from "@/components/EmptyState";
+import ErrorState from "@/components/ErrorState";
+import LoadingState from "@/components/LoadingState";
 import { formatEventPeriod, isOngoing } from "@/lib/events";
 import { useUpcomingEvents } from "@/lib/useUpcomingEvents";
 

@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
 import { LuFlaskConical } from "react-icons/lu";
 import type { LabSearchState } from "@/hooks/useLabSearch";
-import ErrorState from "@/componets/ErrorState";
-import LoadingState from "@/componets/LoadingState";
+import ErrorState from "@/components/ErrorState";
+import LoadingState from "@/components/LoadingState";
 
 export type SearchSpot = { id: number; name: string; category: string; mark: ReactNode };
 

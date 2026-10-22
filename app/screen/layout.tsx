@@ -1,4 +1,4 @@
-import TabBar from "@/componets/TabBar";
+import TabBar from "@/components/TabBar";
 
 /**
  * ui.pen の frame (402 x 874) にあたる共通の枠。

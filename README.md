@@ -90,12 +90,11 @@ ARスキャン画面は iframe に `allow="camera;"` を付けて `public/ArScan
 │       ├── map/          # キャンパスマップ画面
 │       ├── scan/         # ARスキャン画面（public/ArScanner.html を iframe で表示）
 │       └── mypage/       # マイページ
-├── componets/            # 共通コンポーネント（NavBar, TabBar）
+├── components/            # 共通コンポーネント（NavBar, TabBar）
 ├── public/
 │   ├── ArScanner.html    # A-Frame + AR.js によるARスキャナ
 │   └── *.png / *.jpg     # ロゴ・キャンパス画像など
 ├── AGENTS.md / CLAUDE.md # AI エージェント向けの指示
 └── next.config.ts
 ```
-
-注: ディレクトリ名 `componets` は現状の綴りのままです。
+
