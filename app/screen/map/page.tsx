@@ -1,8 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Image from "next/image";
-import { BsFillBadgeWcFill } from "react-icons/bs";
 import { IoBookOutline, IoFlaskOutline } from "react-icons/io5";
 import { LuLocateFixed, LuMinus, LuPlus, LuSearch } from "react-icons/lu";
 import { useGeolocation } from "@/hooks/useGeolocation";
@@ -12,6 +11,7 @@ import {
   latLngToMapPercent,
   metersToMapPercentX,
 } from "@/lib/geo";
+import BuildingMarkerDetails from "./_components/BuildingMarkerDetails";
 
 /**
  * マップ画面 (ui.pen frame "Map")
@@ -42,15 +42,6 @@ const spotData = [
     x: 58,
     y: 73,
   },
-  {
-    // TODO: 仮の位置。実際のトイレの位置に合わせる
-    id: 3,
-    name: "メインWC",
-    category: "トイレ",
-    mark: <BsFillBadgeWcFill />,
-    x: 64,
-    y: 53,
-  },
 ];
 
 const categories = ["すべて", "研究室", "自習室", "トイレ", "カフェ", "その他"];
@@ -69,6 +60,13 @@ export default function MapPage() {
     /* それぞれの選択肢の状態 */
   }
   const [selectedOption, setSelectedOption] = useState<string | null>("すべて");
+  const [selectedSpot, setSelectedSpot] = useState<(typeof spotData)[number] | null>(null);
+  const selectedPinRef = useRef<HTMLButtonElement | null>(null);
+
+  const closeDetails = () => {
+    setSelectedSpot(null);
+    selectedPinRef.current?.focus();
+  };
   {
     /* マップ画像が未配置のときはプレースホルダーに切り替える */
   }
@@ -106,6 +104,7 @@ export default function MapPage() {
       : null;
 
   const handleOptionClick = (option: string) => {
+    setSelectedSpot(null);
     if (selectedOption === option) {
       setSelectedOption(null);
     } else {
@@ -155,7 +154,10 @@ export default function MapPage() {
       <div
         ref={containerRef}
         {...handlers}
-        className="relative mt-3 min-h-0 flex-1 touch-none select-none overflow-hidden border-t border-hairline bg-[#e9efe4]"
+        onKeyDown={(event) => {
+          if (event.key === "Escape" && selectedSpot) closeDetails();
+        }}
+        className="relative mt-3 min-h-0 flex-1 touch-none select-none overflow-clip border-t border-hairline bg-[#e9efe4]"
       >
         {/* 画像は実寸のまま置き、transform で移動・拡大する */}
         <div
@@ -195,7 +197,12 @@ export default function MapPage() {
             key={spot.id}
             type="button"
             style={toScreen(spot.x, spot.y) ?? { visibility: "hidden" }}
-            onClick={() => alert(`${spot.name} (${spot.category})`)}
+            aria-expanded={selectedSpot?.id === spot.id}
+            aria-controls={selectedSpot?.id === spot.id ? "building-marker-details" : undefined}
+            onClick={(event) => {
+              selectedPinRef.current = event.currentTarget;
+              setSelectedSpot(selectedSpot?.id === spot.id ? null : spot);
+            }}
             // 足の先端が座標を指すよう、ピン全体の下端を基準に配置する
             className="absolute flex -translate-x-1/2 -translate-y-full cursor-pointer flex-col items-center drop-shadow-[0_2px_4px_rgb(31_35_40/0.25)] transition-transform active:scale-95"
           >
@@ -212,6 +219,14 @@ export default function MapPage() {
             <span className="-mt-px size-0 border-x-[6px] border-t-[8px] border-x-transparent border-t-brand" />
           </button>
         ))}
+
+        {selectedSpot && (
+          <BuildingMarkerDetails
+            key={selectedSpot.id}
+            buildingName={selectedSpot.name}
+            onClose={closeDetails}
+          />
+        )}
 
         {/* 現在地 */}
         {current && view && (
