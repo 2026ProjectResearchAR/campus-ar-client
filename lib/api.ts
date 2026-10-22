@@ -43,18 +43,18 @@ export type ApiFetchOptions = Omit<RequestInit, "body"> & {
  * ネットワーク失敗は code="network_error"(status 0) の ApiError になる。
  */
 export async function apiFetch<T>(path: string, options: ApiFetchOptions = {}): Promise<T> {
-  if (!API_BASE_URL) {
-    throw new ApiError(0, "config_error", "NEXT_PUBLIC_API_BASE_URL が設定されていません");
-  }
-
+  // NEXT_PUBLIC_API_BASE_URL が未設定の場合は同一オリジン (next.config.ts の rewrites 経由) でリクエストする
   const { json, headers, ...init } = options;
   const finalHeaders = new Headers(headers);
   finalHeaders.set("Accept", "application/json");
   if (json !== undefined) finalHeaders.set("Content-Type", "application/json");
 
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+  const endpoint = API_BASE_URL ? `${API_BASE_URL}${normalizedPath}` : normalizedPath;
+
   let res: Response;
   try {
-    res = await fetch(`${API_BASE_URL}${path.startsWith("/") ? path : `/${path}`}`, {
+    res = await fetch(endpoint, {
       ...init,
       headers: finalHeaders,
       body: json === undefined ? undefined : JSON.stringify(json),
