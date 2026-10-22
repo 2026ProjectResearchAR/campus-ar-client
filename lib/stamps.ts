@@ -21,7 +21,22 @@ export type StampSpot = {
  * スタンプ対象のスポット一覧。
  * TODO: スポットごとの AR マーカー (#31) が揃ったら差し替える。
  */
-export const STAMP_SPOTS: StampSpot[] = [{ markerId: "hiro-placeholder", name: "テストスポット" }];
+export const STAMP_SPOTS: StampSpot[] = [
+  { markerId: "marker_miyoshilab", name: "三好研究室" },
+  { markerId: "marker_yoshimilab", name: "吉見研究室" },
+  { markerId: "marker_okulab", name: "奥研究室" },
+  { markerId: "marker_yamamotolab", name: "山本研究室" },
+  { markerId: "marker_sogalab", name: "曽我研究室" },
+  { markerId: "marker_uedalab", name: "植田研究室" },
+  { markerId: "marker_ikedalab", name: "池田研究室" },
+  { markerId: "marker_watanabelab", name: "渡辺研究室" },
+  { markerId: "marker_kataokalab", name: "片岡研究室" },
+  { markerId: "marker_shibalab", name: "芝研究室" },
+  { markerId: "marker_sugayalab", name: "菅谷研究室" },
+  { markerId: "marker_fuzimotolab", name: "藤本研究室" },
+  { markerId: "marker_hujitalab", name: "藤田研究室" },
+  { markerId: "marker_nomuralab", name: "野村研究室" },
+];
 
 /** マーカーIDに対応するスタンプ対象スポット (対象外なら undefined) */
 export function findStampSpot(markerId: string): StampSpot | undefined {

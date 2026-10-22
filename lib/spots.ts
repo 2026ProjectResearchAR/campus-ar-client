@@ -25,7 +25,7 @@ export async function getSpotByMarkerId(markerId: string, signal?: AbortSignal):
 
 /** スポットの 3D モデル (.glb) のURL。なければ null */
 export function findModelUrl(spot: Spot): string | null {
-  return spot.ar_assets.find((a) => a.type === "3d_model")?.url ?? null;
+  return spot.ar_assets.find((a) => a.type === "model" || a.type === "3d_model")?.url ?? null;
 }
 
 /** お気に入り・メモで参照するスポットの基本情報 (マップのピンと id を揃える) */
