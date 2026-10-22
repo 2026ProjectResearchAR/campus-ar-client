@@ -3,6 +3,7 @@ import Link from 'next/link';
 // モジュールも一緒に読み込む
 import styles from './page.module.css';
 import { LuChevronRight, LuMapPin } from "react-icons/lu";
+import EventNoticeCard from '@/componets/EventNoticeCard';
 
 
 export default function StartPage() {
@@ -52,15 +53,8 @@ export default function StartPage() {
           <LuChevronRight size={22} className="shrink-0 text-white/80" />
         </Link>
 
-        {/* 下部案内カード */}
-        <div className="mt-4 rounded-2xl border border-brand/15 bg-brand-soft px-4 py-3.5">
-          <p className="text-[14px] font-bold text-brand">
-            オープンキャンパス開催中！
-          </p>
-          <p className="mt-1 text-[13px] leading-relaxed text-ink/80">
-            研究室前のマーカーにスマホの背面をタッチすると研究室ごとの情報が表示されます✨
-          </p>
-        </div>
+        {/* 下部案内カード (events API) */}
+        <EventNoticeCard className="mt-4" />
 
       </main>
     </div>
