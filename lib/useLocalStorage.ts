@@ -30,6 +30,23 @@ function readRaw(key: string): string | null {
 }
 
 /**
+ * このアプリが保存したデータ (STORAGE_PREFIX 付きのキー) をすべて削除する。
+ * 表示中の useLocalStorage にも通知するので、画面はすぐ初期状態に戻る。
+ * 削除したキーの数を返す。localStorage が使えない場合は例外を投げる。
+ */
+export function clearLocalData(): number {
+  const storage = window.localStorage;
+  const keys: string[] = [];
+  for (let i = 0; i < storage.length; i++) {
+    const key = storage.key(i);
+    if (key?.startsWith(STORAGE_PREFIX)) keys.push(key);
+  }
+  keys.forEach((key) => storage.removeItem(key));
+  window.dispatchEvent(new Event(LOCAL_EVENT));
+  return keys.length;
+}
+
+/**
  * localStorage と同期する state。
  * - SSR / hydration 時は initialValue を返す (hydration mismatch を防ぐ)
  * - 他コンポーネント・他タブの更新にも追従する
