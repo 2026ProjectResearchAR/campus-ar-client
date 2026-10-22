@@ -7,17 +7,24 @@
     <script src="https://cdn.jsdelivr.net/npm/@ar-js-org/ar.js@3.4.8/aframe/build/aframe-ar.js"></script>
   </head>
   <body style="margin: 0; overflow: hidden;">
-    <a-scene embedded arjs="sourceType: webcam;">
+    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;">
+      <!-- 照明設定: 3Dモデルが暗くなるのを防ぐ -->
+      <a-entity light="type: ambient; intensity: 1.2;"></a-entity>
+      <a-entity light="type: directional; intensity: 0.8;" position="1 2 1"></a-entity>
+
       <a-marker preset="hiro" data-marker-id="hiro">
-        <!-- API から 3D モデルが届くまでの仮表示 -->
-        <a-box data-placeholder position="0 0.5 0" material="color: red;"></a-box>
-        <a-entity data-model position="0 0 0"></a-entity>
+        <!-- 3D モデル配置エンティティ (初期は非表示/モデルなし) -->
+        <a-entity
+          data-model
+          position="0 0 0"
+          scale="0.25 0.25 0.25"
+          rotation="0 0 0"
+        ></a-entity>
       </a-marker>
       <a-entity camera></a-entity>
     </a-scene>
     <script>
-      // マーカーを追加する場合は data-marker-id を付けた <a-marker> を増やし、
-      // 必要なら MARKER_IDS で送信用IDへ対応付ける (未指定なら data-marker-id をそのまま使う)
+      // Hiro マーカー検知時に三好研究室のマーカーIDへマッピング
       var MARKER_IDS = { hiro: "marker_miyoshilab" };
       var targetOrigin = window.location.origin;
 
@@ -31,39 +38,48 @@
       }
 
       document.querySelectorAll("a-marker[data-marker-id]").forEach(function (el) {
-        el.addEventListener("markerFound", function () { notify("markerFound", el); });
-        el.addEventListener("markerLost", function () { notify("markerLost", el); });
+        el.addEventListener("markerFound", function () {
+          console.log("[AR] Marker found:", markerIdOf(el));
+          notify("markerFound", el);
+        });
+        el.addEventListener("markerLost", function () {
+          console.log("[AR] Marker lost:", markerIdOf(el));
+          notify("markerLost", el);
+        });
 
-        // モデルの読み込みに失敗したら仮表示に戻し、親ウィンドウへ知らせる
         var model = el.querySelector("[data-model]");
         if (model) {
-          model.addEventListener("model-error", function () {
-            var placeholder = el.querySelector("[data-placeholder]");
-            if (placeholder) placeholder.setAttribute("visible", true);
+          model.addEventListener("model-loaded", function () {
+            console.log("[AR] 3D Model successfully loaded for:", markerIdOf(el));
+          });
+          model.addEventListener("model-error", function (e) {
+            console.error("[AR] 3D Model load error:", e.detail);
             notify("modelError", el);
           });
         }
       });
 
-      // 親ウィンドウが spots API から取得した 3D モデル (.glb) をマーカー上に表示する
+      // 親ウィンドウ (ArScanView) から 3D モデルの URL を受信したときの処理
       window.addEventListener("message", function (event) {
         if (event.origin !== targetOrigin) return;
         var data = event.data;
         if (!data || data.type !== "showModel" || typeof data.markerId !== "string") return;
 
+        console.log("[AR] Received showModel message:", data);
+
         document.querySelectorAll("a-marker[data-marker-id]").forEach(function (el) {
           if (markerIdOf(el) !== data.markerId) return;
           var model = el.querySelector("[data-model]");
-          var placeholder = el.querySelector("[data-placeholder]");
           if (!model) return;
 
           if (typeof data.url === "string" && data.url) {
-            if (model.getAttribute("gltf-model") === data.url) return;
+            console.log("[AR] Setting gltf-model URL:", data.url);
             model.setAttribute("gltf-model", data.url);
-            if (placeholder) placeholder.setAttribute("visible", false);
+            model.setAttribute("visible", true);
           } else {
+            console.log("[AR] Removing gltf-model");
             model.removeAttribute("gltf-model");
-            if (placeholder) placeholder.setAttribute("visible", true);
+            model.setAttribute("visible", false);
           }
         });
       });
