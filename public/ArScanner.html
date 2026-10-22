@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@ar-js-org/ar.js@3.4.8/aframe/build/aframe-ar.js"></script>
-    <!-- QR コード認識用ライブラリ (jsQR) -->
-    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+    <!-- QR コード認識用ライブラリ (ローカル配信) -->
+    <script src="/jsQR.js"></script>
     <script>
       /**
        * 右手系 Z-up から 右手系 Y-up への座標系変換コンポーネント
@@ -115,52 +115,81 @@
       });
 
       // ------------------------------------------------------------------
-      // QR コードリアルタイム検出ループ (AR.js のカメラ映像から jsQR で認識)
+      // QR コードリアルタイム検出ループ (AR.js のカメラ中央を高精細に jsQR で解析)
       // ------------------------------------------------------------------
       var qrCanvas = document.createElement("canvas");
       var qrCtx = qrCanvas.getContext("2d", { willReadFrequently: true });
       var lastQrCheck = 0;
       var lastReportedQr = null;
+      var scanCount = 0;
+      var hasLoggedReady = false;
 
       function scanQRCodeLoop() {
         requestAnimationFrame(scanQRCodeLoop);
 
         var now = Date.now();
-        if (now - lastQrCheck < 250) return; // 250ms 間隔でチェック
+        if (now - lastQrCheck < 200) return; // 200ms 間隔でチェック
         lastQrCheck = now;
 
         var video = document.querySelector("#arjs-video") || document.querySelector("video");
-        if (!video || video.readyState < 2 || video.videoWidth === 0) return;
+        if (!video || video.readyState < 2 || !video.videoWidth) {
+          return;
+        }
 
-        // 計算負荷軽減のため最大幅 640px にスケールダウン
-        var maxDim = 640;
-        var scale = Math.min(1, maxDim / Math.max(video.videoWidth, video.videoHeight));
-        qrCanvas.width = Math.floor(video.videoWidth * scale);
-        qrCanvas.height = Math.floor(video.videoHeight * scale);
+        if (!hasLoggedReady) {
+          hasLoggedReady = true;
+          console.log("[ArScanner] Camera video ready: " + video.videoWidth + "x" + video.videoHeight);
+          console.log("[ArScanner] jsQR library loaded: " + (typeof window.jsQR === "function" ? "OK" : "NG (missing)"));
+        }
 
-        qrCtx.drawImage(video, 0, 0, qrCanvas.width, qrCanvas.height);
-        var imageData = qrCtx.getImageData(0, 0, qrCanvas.width, qrCanvas.height);
+        try {
+          scanCount++;
+          // スマホ・PCの画面中央（照準フレーム枠内）を高精細に切り抜き
+          var vw = video.videoWidth;
+          var vh = video.videoHeight;
+          var cropSize = Math.floor(Math.min(vw, vh) * 0.75);
+          var cropX = Math.floor((vw - cropSize) / 2);
+          var cropY = Math.floor((vh - cropSize) / 2);
 
-        if (window.jsQR) {
-          var code = window.jsQR(imageData.data, imageData.width, imageData.height, {
-            inversionAttempts: "dontInvert",
-          });
-          if (code && code.data) {
-            if (code.data !== lastReportedQr) {
-              lastReportedQr = code.data;
-              console.log("[AR] QR Code detected:", code.data);
-              // 親ウィンドウへ QR 検出イベントを送信
-              window.parent.postMessage({ type: "qrFound", url: code.data }, "*");
-              setTimeout(function () {
-                lastReportedQr = null;
-              }, 4000);
-            }
+          var targetSize = Math.min(cropSize, 600);
+          qrCanvas.width = targetSize;
+          qrCanvas.height = targetSize;
+
+          qrCtx.drawImage(video, cropX, cropY, cropSize, cropSize, 0, 0, targetSize, targetSize);
+          var imageData = qrCtx.getImageData(0, 0, targetSize, targetSize);
+
+          // 2秒（10回）ごとにハートビートログを出力して稼働を確認
+          if (scanCount % 10 === 0) {
+            console.log("[ArScanner] Scanning loop active. frames: " + scanCount + " (analysis size: " + targetSize + "x" + targetSize + ")");
           }
+
+          if (typeof window.jsQR === "function") {
+            var code = window.jsQR(imageData.data, imageData.width, imageData.height, {
+              inversionAttempts: "attemptBoth",
+            });
+            if (code && code.data) {
+              if (code.data !== lastReportedQr) {
+                lastReportedQr = code.data;
+                console.log("[ArScanner] 🎯 QR Code detected:", code.data);
+                // 親ウィンドウへ QR 検出イベントを送信
+                window.parent.postMessage({ type: "qrFound", url: code.data }, "*");
+                setTimeout(function () {
+                  lastReportedQr = null;
+                }, 3000);
+              }
+            }
+          } else if (scanCount % 20 === 0) {
+            console.warn("[ArScanner] window.jsQR is not available yet!");
+          }
+        } catch (e) {
+          console.error("[ArScanner] QR scan loop error:", e);
         }
       }
 
+      // 即時および load 完了の両方で安全にループ開始
+      scanQRCodeLoop();
       window.addEventListener("load", function () {
-        setTimeout(scanQRCodeLoop, 1500);
+        scanQRCodeLoop();
       });
     </script>
   </body>

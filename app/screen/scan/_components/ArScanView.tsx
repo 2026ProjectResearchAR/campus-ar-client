@@ -33,23 +33,40 @@ export default function ArScanView() {
   // 方式1: QRコード検出で開く 3D モデル鑑賞モーダル
   const [modalSpot, setModalSpot] = useState<Spot | null>(null);
   const [isModalLoading, setIsModalLoading] = useState(false);
+  // スキャン枠の発光アニメーション用フラグ
+  const [isFrameFlashing, setIsFrameFlashing] = useState(false);
 
   // マーカー・QR からスポットを取得して 3D モーダルを開く処理
   const openSpotModal = useCallback(
     async (targetMarkerId: string) => {
+      // スキャン枠を一時的にグリーンに発光
+      setIsFrameFlashing(true);
+      setTimeout(() => setIsFrameFlashing(false), 1200);
+
+      if (typeof window !== "undefined" && "vibrate" in navigator) {
+        try {
+          navigator.vibrate(100);
+        } catch {
+          // ignore
+        }
+      }
+
+      console.log("[ArScanView] 🚀 Requesting spot from API for markerId:", targetMarkerId);
       setIsModalLoading(true);
       try {
         const spot = await getSpotByMarkerId(targetMarkerId);
+        console.log("[ArScanView] ✅ Spot API Success:", spot);
         if (spot) {
-          // スタンプのローカル記録と visits API への記録
           collect(targetMarkerId);
           recordVisit(targetMarkerId).catch((err) =>
-            console.warn("Failed to record visit:", err)
+            console.warn("[ArScanView] Failed to record visit:", err)
           );
           setModalSpot(spot);
+        } else {
+          console.warn("[ArScanView] ⚠️ Spot not found (null) for markerId:", targetMarkerId);
         }
       } catch (err) {
-        console.error("Failed to load spot for modal:", err);
+        console.error("[ArScanView] ❌ Spot API Error for markerId:", targetMarkerId, err);
       } finally {
         setIsModalLoading(false);
       }
@@ -61,11 +78,16 @@ export default function ArScanView() {
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
       const data = event.data;
-      if (data && data.type === "qrFound" && typeof data.url === "string") {
-        console.log("[ArScanView] Received QR data:", data.url);
+      if (!data) return;
+
+      if (data.type === "qrFound" && typeof data.url === "string") {
+        console.log("[ArScanView] 📥 Received QR raw data:", data.url);
         const extractedId = extractMarkerIdFromUrl(data.url);
+        console.log("[ArScanView] 🔍 Extracted markerId:", extractedId, "from raw:", data.url);
         if (extractedId) {
           openSpotModal(extractedId);
+        } else {
+          console.warn("[ArScanView] ⚠️ Could not extract markerId from URL:", data.url);
         }
       }
     };
@@ -134,26 +156,48 @@ export default function ArScanView() {
 
   return (
     <div className="relative w-full flex-1 h-full select-none overflow-hidden">
-      {/* カメラ映像 (A-Frame + AR.js + jsQR) */}
+      {/* カメラ映像 (A-Frame + AR.js + jsQR) - キャッシュバスター付き */}
       <iframe
         ref={iframeRef}
-        src="/ArScanner.html"
+        src="/ArScanner.html?v=20261023_qr2"
         className="w-full h-full border-0 absolute inset-0"
         allow="camera;"
       />
 
       {/* スキャン照準フレームガイド (カメラ中央の視覚的ヒント) */}
       <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center p-6">
-        <div className="relative size-60 rounded-3xl border-2 border-white/50 shadow-[0_0_0_9999px_rgba(0,0,0,0.25)]">
+        <div
+          className={`relative size-60 rounded-3xl border-2 transition-all duration-300 shadow-[0_0_0_9999px_rgba(0,0,0,0.25)] ${
+            isFrameFlashing
+              ? "border-emerald-400 scale-105 shadow-[0_0_24px_rgba(52,211,153,0.8)]"
+              : "border-white/50"
+          }`}
+        >
           {/* 四隅の強調アクセント */}
-          <span className="absolute -left-0.5 -top-0.5 size-5 rounded-tl-xl border-l-4 border-t-4 border-brand" />
-          <span className="absolute -right-0.5 -top-0.5 size-5 rounded-tr-xl border-r-4 border-t-4 border-brand" />
-          <span className="absolute -bottom-0.5 -left-0.5 size-5 rounded-bl-xl border-b-4 border-l-4 border-brand" />
-          <span className="absolute -bottom-0.5 -right-0.5 size-5 rounded-br-xl border-b-4 border-r-4 border-brand" />
+          <span
+            className={`absolute -left-0.5 -top-0.5 size-5 rounded-tl-xl border-l-4 border-t-4 transition-colors duration-300 ${
+              isFrameFlashing ? "border-emerald-400" : "border-brand"
+            }`}
+          />
+          <span
+            className={`absolute -right-0.5 -top-0.5 size-5 rounded-tr-xl border-r-4 border-t-4 transition-colors duration-300 ${
+              isFrameFlashing ? "border-emerald-400" : "border-brand"
+            }`}
+          />
+          <span
+            className={`absolute -bottom-0.5 -left-0.5 size-5 rounded-bl-xl border-b-4 border-l-4 transition-colors duration-300 ${
+              isFrameFlashing ? "border-emerald-400" : "border-brand"
+            }`}
+          />
+          <span
+            className={`absolute -bottom-0.5 -right-0.5 size-5 rounded-br-xl border-b-4 border-r-4 transition-colors duration-300 ${
+              isFrameFlashing ? "border-emerald-400" : "border-brand"
+            }`}
+          />
         </div>
         <p className="mt-4 flex items-center gap-1.5 rounded-full bg-black/60 px-4 py-1.5 text-[12px] font-medium text-white/90 backdrop-blur">
           <LuQrCode className="text-[14px] text-brand" />
-          <span>QRコード または ARマーカーを枠内に合わせてください</span>
+          <span>QRコードを枠内に合わせてください</span>
         </p>
       </div>
 
