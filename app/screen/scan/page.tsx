@@ -1,11 +1,11 @@
-import type { Metadata } from "next";
+import { createPageMetadata } from "@/lib/metadata";
 
 import ArScanView from "./_components/ArScanView";
 
-export const metadata: Metadata = {
-  title: "ARスキャン",
-  description: "カメラでARマーカーを読み取り、研究室や施設の情報を表示します。",
-};
+export const metadata = createPageMetadata(
+  "ARスキャン",
+  "ARCloudのARスキャナーです。施設のARマーカーを読み取り、施設情報や3Dモデルを表示します。",
+);
 
 export default function ScanPage() {
   return <ArScanView />;

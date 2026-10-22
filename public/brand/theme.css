@@ -1,0 +1,32 @@
+/* ARCloud: ロゴの赤・黄・深赤を基準にした共通トークン。
+ * Next.js と独立した AR iframe の両方で読み込む。
+ */
+:root {
+  --ar-coral: #e64b45;
+  --ar-yellow: #f5bf32;
+  --ar-red: #b53030;
+
+  /* 白文字を置く操作面は、コーラルよりコントラストの高い深赤を使う。 */
+  --ar-action: var(--ar-red);
+  --ar-action-hover: #9e2828;
+  --ar-action-pressed: #882222;
+  --ar-red-soft: #fff0ee;
+  --ar-yellow-soft: #fff5d6;
+  --ar-yellow-ink: #73500b;
+  --ar-canvas: #fffcf7;
+  --ar-surface: #ffffff;
+  --ar-border: #e9ddd3;
+  --ar-ink: #382c28;
+  --ar-muted: #74645d;
+  --ar-placeholder: #806e65;
+  --ar-overlay: #382c28;
+  --ar-map-surface: #f5efdf;
+
+  --ar-radius-control: 0.75rem;
+  --ar-radius-card: 1rem;
+  --ar-shadow-card: 0 1px 2px rgb(56 44 40 / 0.04), 0 2px 8px rgb(56 44 40 / 0.03);
+  --ar-shadow-float: 0 2px 4px rgb(56 44 40 / 0.06), 0 8px 24px rgb(56 44 40 / 0.1);
+  --ar-shadow-action: 0 6px 16px rgb(181 48 48 / 0.2);
+  --ar-shadow-locator: 0 0 0 2px var(--ar-red), 0 2px 6px rgb(56 44 40 / 0.2);
+  --ar-shadow-pin: 0 2px 4px rgb(56 44 40 / 0.25);
+}

@@ -40,10 +40,10 @@ export default function StartPage() {
         {/* `${styles.customGlow}` でモジュールの影を追加 */}
         <Link
           href="/screen/map"
-          className={`mt-6 flex items-center gap-3.5 rounded-2xl bg-brand py-4 pl-4 pr-3 text-white no-underline transition-[transform,background-color] active:scale-[0.98] active:bg-brand-strong ${styles.customGlow}`}
+          className={`mt-6 flex items-center gap-3.5 rounded-2xl bg-brand py-4 pl-4 pr-3 text-white no-underline transition-[transform,background-color] hover:bg-brand-hover active:scale-[0.98] active:bg-brand-strong ${styles.customGlow}`}
         >
           {/* アイコンの下地 */}
-          <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-white/15 text-[22px]">
+          <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-accent text-[22px] text-brand">
             <LuMapPin />
           </span>
           <span className="min-w-0 flex-1">

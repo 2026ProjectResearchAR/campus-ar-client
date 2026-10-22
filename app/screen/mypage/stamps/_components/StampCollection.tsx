@@ -27,7 +27,7 @@ export default function StampCollection() {
       <h1 className="mt-2 text-[22px] font-bold text-ink">スタンプコレクション</h1>
 
       {/* 進捗 */}
-      <section className="mt-4 rounded-2xl border border-hairline bg-surface p-4 shadow-card">
+      <section className="mt-4 rounded-2xl border border-accent/60 bg-accent-soft p-4">
         <div className="flex items-baseline justify-between">
           <p className="text-[13px] text-muted">
             {isComplete ? "コンプリート！" : "集めたスタンプ"}
@@ -41,7 +41,8 @@ export default function StampCollection() {
           aria-valuenow={count}
           aria-valuemin={0}
           aria-valuemax={total}
-          className="mt-3 h-2 overflow-hidden rounded-full bg-brand-soft"
+          aria-label="集めたスタンプ"
+          className="mt-3 h-2 overflow-hidden rounded-full bg-surface"
         >
           <div className="h-full rounded-full bg-brand transition-[width]" style={{ width: `${percent}%` }} />
         </div>
@@ -69,12 +70,12 @@ export default function StampCollection() {
           return (
             <li
               key={spot.markerId}
-              className="flex flex-col items-center gap-2 rounded-2xl border border-hairline bg-surface px-2 py-4 text-center shadow-card"
+              className={`flex flex-col items-center gap-2 rounded-2xl border px-2 py-4 text-center ${acquiredAt ? "border-accent bg-accent-soft" : "border-hairline bg-surface"}`}
             >
               <span
                 className={
                   acquiredAt
-                    ? "flex size-14 items-center justify-center rounded-full bg-brand text-white"
+                    ? "flex size-14 items-center justify-center rounded-full bg-accent text-brand"
                     : "flex size-14 items-center justify-center rounded-full border-2 border-dashed border-hairline text-placeholder"
                 }
               >

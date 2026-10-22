@@ -1,5 +1,5 @@
-import type { Metadata } from "next";
 import Link from "next/link";
+import { createPageMetadata } from "@/lib/metadata";
 import {
   LuAward,
   LuCalendar,
@@ -16,10 +16,10 @@ import ApiHealthCheck from "@/components/ApiHealthCheck";
  * マイページ (ui.pen frame "My page")
  *
  * レイアウト (ui.pen の構成をベースに、余白とサイズを 4px グリッドで調整):
- *   - 背景の赤い楕円 : 541 x 300 / rotate 12deg / brand 8%
+ *   - 背景の黄色い楕円 : 541 x 300 / rotate 12deg / accent-soft
  *   - アバター       : 64 x 64 / 左右 20px
  *   - メニュー行     : 高さ 56px / radius 16 / 行間 8px
- *   - 行内           : アイコン 36px の薄赤タイル / ラベル 15px semibold
+ *   - 行内           : アイコン 36px の薄黄タイル / ラベル 15px semibold
  */
 type MenuItem = { label: string; icon: React.ReactNode; href?: string };
 
@@ -52,24 +52,24 @@ const MENU: MenuItem[] = [
   },
 ];
 
-export const metadata: Metadata = {
-  title: "マイページ",
-  description: "プロフィールや獲得したバッジ、お気に入りを確認できます。",
-};
+export const metadata = createPageMetadata(
+  "マイページ",
+  "ARCloudのマイページです。スタンプコレクションやお気に入り、メモを確認できます。",
+);
 
 export default function MyPage() {
   return (
     <div className="relative flex-1 overflow-hidden pt-8">
-      {/* 背景の赤い楕円 */}
+      {/* ロゴの黄色を淡くしたプロフィール背景 */}
       <div
         aria-hidden
-        className="pointer-events-none absolute -left-[100px] -top-[120px] h-[300px] w-[541px] rotate-12 rounded-[50%] bg-brand/8"
+        className="pointer-events-none absolute -left-[100px] -top-[120px] h-[300px] w-[541px] rotate-12 rounded-[50%] bg-accent-soft"
       />
 
       <div className="relative px-5">
         {/* プロフィール */}
         <div className="flex items-center gap-4">
-          <span className="flex size-16 shrink-0 items-center justify-center rounded-full bg-brand text-[28px] font-semibold leading-none text-white ring-4 ring-surface">
+          <span className="flex size-16 shrink-0 items-center justify-center rounded-full bg-brand text-[28px] font-semibold leading-none text-white ring-4 ring-accent">
             G
           </span>
           <div className="min-w-0">
@@ -110,7 +110,7 @@ const ROW_CLASS =
 function MenuRowContent({ item }: { item: MenuItem }) {
   return (
     <>
-      <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-brand-soft text-brand">
+      <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-accent-soft text-brand">
         {item.icon}
       </span>
       <span className="text-[15px] font-semibold text-ink">{item.label}</span>

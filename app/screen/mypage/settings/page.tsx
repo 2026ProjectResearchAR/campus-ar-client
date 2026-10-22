@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import { createPageMetadata } from "@/lib/metadata";
 import Link from "next/link";
 import { LuCamera, LuChevronLeft, LuMapPin } from "react-icons/lu";
 
@@ -7,10 +7,10 @@ import ClearLocalData from "./_components/ClearLocalData";
 import PermissionItem from "./_components/PermissionItem";
 import SettingsSection from "./_components/SettingsSection";
 
-export const metadata: Metadata = {
-  title: "設定",
-  description: "位置情報・カメラの許可状況の確認や、保存データの削除ができます。",
-};
+export const metadata = createPageMetadata(
+  "設定",
+  "ARCloudの位置情報・カメラの許可状況や、この端末に保存したデータを管理できます。",
+);
 
 /**
  * 設定ページ: 権限の案内 / 保存データの削除 / アプリ情報

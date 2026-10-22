@@ -76,6 +76,7 @@ export default function ArScanView() {
       <iframe
         ref={iframeRef}
         src="/ArScanner.html"
+        title="ARCloud ARスキャナー"
         className="w-full h-full border-0 absolute inset-0"
         allow="camera;"
       />

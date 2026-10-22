@@ -99,7 +99,7 @@ export default function StampOverlay() {
           <LuX size={20} strokeWidth={2.2} />
         </button>
 
-        <span className="mx-auto flex size-24 animate-stamp-pop items-center justify-center rounded-full border-4 border-brand/30 bg-brand text-white ring-4 ring-brand-soft">
+        <span className="mx-auto flex size-24 animate-stamp-pop items-center justify-center rounded-full border-4 border-accent bg-accent text-brand ring-4 ring-accent-soft">
           {complete ? <LuTrophy size={44} strokeWidth={2} /> : <LuAward size={44} strokeWidth={2} />}
         </span>
 
@@ -135,7 +135,7 @@ export default function StampOverlay() {
   );
 }
 
-const CONFETTI_COLORS = ["bg-brand", "bg-amber-400", "bg-locator", "bg-emerald-500"];
+const CONFETTI_COLORS = ["bg-brand", "bg-accent", "bg-coral", "bg-accent-soft"];
 
 /** コンプリート時の紙吹雪 (位置・遅延は固定値にして描画ごとに変わらないようにする) */
 function Confetti() {

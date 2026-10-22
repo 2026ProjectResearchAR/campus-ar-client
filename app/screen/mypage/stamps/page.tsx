@@ -1,11 +1,11 @@
-import type { Metadata } from "next";
+import { createPageMetadata } from "@/lib/metadata";
 
 import StampCollection from "./_components/StampCollection";
 
-export const metadata: Metadata = {
-  title: "スタンプコレクション",
-  description: "ARマーカーをスキャンして集めたスタンプを確認できます。",
-};
+export const metadata = createPageMetadata(
+  "スタンプコレクション",
+  "ARCloudでキャンパスのARマーカーをスキャンして集めたスタンプと、コレクションの進み具合を確認できます。",
+);
 
 export default function StampsPage() {
   return <StampCollection />;

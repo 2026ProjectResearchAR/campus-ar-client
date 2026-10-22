@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import NavBar from "@/components/NavBar";
+import { siteMetadata } from "@/lib/metadata";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -13,14 +14,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: {
-    default: "龍谷大学 瀬田キャンパス AR案内",
-    template: "%s | 龍谷大学 瀬田キャンパス AR案内",
-  },
-  description:
-    "龍谷大学 瀬田キャンパスの研究室や施設を、マップとARで案内するキャンパスガイドアプリです。",
-};
+export const metadata: Metadata = siteMetadata;
 
 // viewportFit: "cover" がないと iPhone で env(safe-area-inset-*) が 0 のままになる
 export const viewport: Viewport = {
