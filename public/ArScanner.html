@@ -5,6 +5,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@ar-js-org/ar.js@3.4.8/aframe/build/aframe-ar.js"></script>
+    <script>
+      /**
+       * 右手系 Z-up から 右手系 Y-up への座標系変換コンポーネント
+       * モデルがロードされた時点で Three.js のメッシュに対して X 軸回転を適用する
+       * デフォルト: -90度 (X軸周りに -90° 回転して Z軸を Y軸(上) へ向ける)
+       */
+      AFRAME.registerComponent("right-z-to-y-up", {
+        schema: {
+          deg: { type: "number", default: -90 },
+        },
+        init: function () {
+          var el = this.el;
+          var self = this;
+          el.addEventListener("model-loaded", function (e) {
+            var model = e.detail.model || el.getObject3D("mesh");
+            if (model) {
+              model.rotation.x = THREE.MathUtils.degToRad(self.data.deg);
+              console.log("[AR] Converted Right-Handed Z-up to Y-up (rotation.x = " + self.data.deg + " deg)");
+            }
+          });
+        },
+        update: function () {
+          var model = this.el.getObject3D("mesh");
+          if (model) {
+            model.rotation.x = THREE.MathUtils.degToRad(this.data.deg);
+          }
+        },
+      });
+    </script>
   </head>
   <body style="margin: 0; overflow: hidden;">
     <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;">
@@ -22,12 +51,12 @@
           opacity="0.8"
         ></a-ring>
 
-        <!-- 3D モデル本体 (GLB) -->
+        <!-- 3D モデル本体 (GLB): right-z-to-y-up コンポーネントを適用 -->
         <a-entity
           data-model
+          right-z-to-y-up="deg: -90"
           position="0 0.05 0"
           scale="0.2 0.2 0.2"
-          rotation="0 0 0"
         ></a-entity>
       </a-marker>
       <a-entity camera></a-entity>
