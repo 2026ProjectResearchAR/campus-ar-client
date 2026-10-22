@@ -19,7 +19,7 @@ export default function ErrorState({ error, onRetry }: ErrorStateProps) {
         <button
           type="button"
           onClick={onRetry}
-          className="mt-3 h-9 rounded-full bg-brand px-5 text-[13px] font-semibold text-white transition-colors active:bg-brand-strong"
+          className="mt-3 h-9 rounded-full bg-brand px-5 text-[13px] font-semibold text-white transition-colors hover:bg-brand-hover active:bg-brand-strong"
         >
           再試行
         </button>

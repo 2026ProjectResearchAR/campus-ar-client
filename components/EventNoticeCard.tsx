@@ -27,14 +27,14 @@ export default function EventNoticeCard({ className = "" }: EventNoticeCardProps
   return (
     <Link
       href="/screen/mypage/events"
-      className={`block rounded-2xl border border-brand/15 bg-brand-soft px-4 py-3.5 no-underline ${className}`}
+      className={`block rounded-2xl border border-accent/60 bg-accent-soft px-4 py-3.5 no-underline ${className}`}
     >
-      <p className="text-[14px] font-bold text-brand">
+      <p className="text-[14px] font-bold text-accent-ink">
         {ongoing ? `${event.title} 開催中！` : `開催予定: ${event.title}`}
       </p>
       <p className="mt-1 text-[12px] text-muted">{formatEventPeriod(event)}</p>
       {event.description && (
-        <p className="mt-1 line-clamp-3 whitespace-pre-line text-[13px] leading-relaxed text-ink/80">
+        <p className="mt-1 line-clamp-3 whitespace-pre-line text-[13px] leading-relaxed text-ink">
           {event.description}
         </p>
       )}

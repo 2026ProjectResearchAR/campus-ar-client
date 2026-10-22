@@ -33,7 +33,7 @@ import SpotCard from "./_components/SpotCard";
  *   - チップ     : 高さ 32px / 幅は文字に合わせる / 間隔 8px
  *   - マップ     : 残りの高さいっぱい (タブバーの下まで敷く)。ドラッグで移動・ピンチで拡大
  *   - ピン       : 高さ 28px の吹き出し + 12 x 8 の足。拡大しても大きさは変えない
- *   - 現在地     : 24px / #0085CD
+ *   - 現在地     : 24px / 黄色の中心 + 深赤の外周
  */
 
 /** x / y はマップ画像上の % 座標 (左上 0,0 / 右下 100,100)。ピンの足の先端がこの点を指す */
@@ -381,7 +381,7 @@ export default function MapPage() {
               aria-pressed={active}
               className={`h-8 shrink-0 rounded-full border px-3.5 text-[13px] transition-colors ${
                 active
-                  ? "border-brand bg-brand font-bold text-white"
+                  ? "border-accent bg-accent font-bold text-ink"
                   : "border-hairline bg-surface font-medium text-ink active:bg-canvas"
               }`}
             >
@@ -396,7 +396,7 @@ export default function MapPage() {
       <div
         ref={containerRef}
         {...handlers}
-        className="relative mt-3 min-h-0 flex-1 touch-none select-none overflow-hidden border-t border-hairline bg-[#e9efe4]"
+        className="relative mt-3 min-h-0 flex-1 touch-none select-none overflow-hidden border-t border-hairline bg-map-surface"
       >
         {/* 画像は実寸のまま置き、transform で移動・拡大する */}
         <div
@@ -425,7 +425,7 @@ export default function MapPage() {
             // public/seta_b_l_2026.jpg が未配置のときの代替表示
             <div
               aria-hidden
-              className="absolute inset-0 bg-[#efeae4] opacity-90 [background-image:linear-gradient(#e3ded8_1px,transparent_1px),linear-gradient(90deg,#e3ded8_1px,transparent_1px)] [background-size:40px_40px]"
+              className="absolute inset-0 bg-map-surface opacity-90 [background-image:linear-gradient(var(--ar-border)_1px,transparent_1px),linear-gradient(90deg,var(--ar-border)_1px,transparent_1px)] [background-size:40px_40px]"
             />
           )}
         </div>
@@ -440,7 +440,7 @@ export default function MapPage() {
               setSelectedSpot({ id: spot.id, name: spot.name, category: spot.category })
             }
             // 足の先端が座標を指すよう、ピン全体の下端を基準に配置する
-            className="absolute flex -translate-x-1/2 -translate-y-full cursor-pointer flex-col items-center drop-shadow-[0_2px_4px_rgb(31_35_40/0.25)] transition-transform active:scale-95"
+            className="absolute flex -translate-x-1/2 -translate-y-full cursor-pointer flex-col items-center drop-shadow-pin transition-transform active:scale-95"
           >
             {/* 吹き出し本体 */}
             <span className="flex h-7 items-center gap-1.5 rounded-full border-[1.5px] border-white bg-brand pl-2 pr-2.5">
@@ -470,12 +470,12 @@ export default function MapPage() {
                     view.scale,
                   aspectRatio: "1",
                 }}
-                className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 rounded-full bg-locator/15"
+                className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 rounded-full border border-accent/60 bg-locator/20"
               />
             )}
             <div
               style={toScreen(current.x, current.y) ?? undefined}
-              className="pointer-events-none absolute size-6 -translate-x-1/2 -translate-y-1/2 rounded-full border-[3px] border-white bg-locator shadow-[0_0_0_1px_rgb(0_133_205/0.3),0_2px_6px_rgb(0_0_0/0.25)]"
+              className="pointer-events-none absolute size-6 -translate-x-1/2 -translate-y-1/2 rounded-full border-[3px] border-white bg-locator shadow-locator"
             />
           </>
         )}
@@ -513,7 +513,7 @@ export default function MapPage() {
                   (current.y / 100) * MAP_SIZE.h,
                 )
               }
-              className="flex size-11 items-center justify-center rounded-xl border border-hairline bg-surface/95 text-locator shadow-card backdrop-blur active:bg-canvas"
+              className="flex size-11 items-center justify-center rounded-xl border border-hairline bg-surface/95 text-brand shadow-card backdrop-blur active:bg-accent-soft"
             >
               <LuLocateFixed size={20} strokeWidth={2.2} />
             </button>

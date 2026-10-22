@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "../public/brand/theme.css";
 
 /*
  * ライトテーマ専用のアプリなので、OS のダークモードで外枠だけ黒くならないよう
@@ -19,27 +20,36 @@
 }
 
 /* ---------------------------------------------------------------
- * デザイントークン (ui_design/ui.pen をベースに調整)
+ * ARCloud デザイントークン。色の定義は public/brand/theme.css に集約。
  * --------------------------------------------------------------- */
+@theme inline {
+  --color-coral: var(--ar-coral); /* ロゴ・装飾。小さい文字には使わない */
+  --color-brand: var(--ar-action); /* 操作・リンク・見出し */
+  --color-brand-hover: var(--ar-action-hover);
+  --color-brand-strong: var(--ar-action-pressed);
+  --color-brand-soft: var(--ar-red-soft);
+  --color-accent: var(--ar-yellow); /* 選択・進捗・獲得 */
+  --color-accent-soft: var(--ar-yellow-soft);
+  --color-accent-ink: var(--ar-yellow-ink);
+  --color-canvas: var(--ar-canvas);
+  --color-surface: var(--ar-surface);
+  --color-hairline: var(--ar-border);
+  --color-placeholder: var(--ar-placeholder);
+  --color-ink: var(--ar-ink);
+  --color-muted: var(--ar-muted);
+  --color-locator: var(--ar-yellow); /* 深赤の外周と組み合わせる現在地 */
+  --color-map-surface: var(--ar-map-surface);
+  --color-overlay: var(--ar-overlay);
+  --radius-xl: var(--ar-radius-control);
+  --radius-2xl: var(--ar-radius-card);
+  --shadow-card: var(--ar-shadow-card);
+  --shadow-float: var(--ar-shadow-float);
+  --shadow-action: var(--ar-shadow-action);
+  --shadow-locator: var(--ar-shadow-locator);
+  --drop-shadow-pin: var(--ar-shadow-pin);
+}
+
 @theme {
-  /* 龍谷レッド。原色の #F50000 は面積が大きいと強すぎるため一段落とした */
-  --color-brand: #c8161d;
-  --color-brand-strong: #a50f15; /* 押下時 */
-  --color-brand-soft: #fcefef; /* 赤系の薄い面 (選択中の行・お知らせ) */
-  --color-canvas: #fbf8f6; /* 画面の下地 */
-  --color-surface: #ffffff; /* カード・バー */
-  --color-hairline: #e4e7ea; /* 枠線 */
-  --color-placeholder: #a3abb2; /* プレースホルダー (白地で可読なコントラスト) */
-  --color-ink: #1f2328; /* 本文・アイコン */
-  --color-muted: #646c75; /* 補足テキスト */
-  --color-locator: #0085cd; /* 現在地マーカー */
-  --color-overlay: #434343; /* スキャン画面のガイドバナー */
-
-  /* 2 段の影: 近い輪郭 + 遠いぼかし */
-  --shadow-card: 0 1px 2px rgb(31 35 40 / 0.06), 0 2px 8px rgb(31 35 40 / 0.04);
-  --shadow-float:
-    0 2px 4px rgb(31 35 40 / 0.06), 0 8px 24px rgb(31 35 40 / 0.1);
-
   /* スタンプ獲得演出 (スキャン画面) */
   --animate-stamp-pop: stamp-pop 640ms cubic-bezier(0.2, 0.9, 0.3, 1.3) both;
   --animate-sheet-in: sheet-in 280ms ease-out both;
@@ -113,6 +123,11 @@ label {
 :focus-visible {
   outline: 2px solid var(--color-brand);
   outline-offset: 2px;
+}
+
+::selection {
+  background: var(--ar-yellow-soft);
+  color: var(--ar-ink);
 }
 
 @media (prefers-reduced-motion: reduce) {

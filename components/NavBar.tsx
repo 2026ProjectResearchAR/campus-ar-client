@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import arcloudIcon from "@/public/brand/arcloud-icon.png";
 import { usePathname } from "next/navigation";
 import { useEffect, useId, useState } from "react";
 import { IoIosClose, IoIosMenu } from "react-icons/io";
@@ -55,7 +56,7 @@ export default function NavBar(props: NavBarProps) {
             <header className="flex h-14 items-center justify-between pl-4 pr-2">
                 <Link href="/" aria-label="ARCloud（あるくろーど）ホーム" className="flex min-h-11 items-center gap-2 no-underline">
                     <Image
-                        src="/brand/arcloud-icon.png"
+                        src={arcloudIcon}
                         alt=""
                         width={36}
                         height={36}

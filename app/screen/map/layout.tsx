@@ -1,10 +1,10 @@
-import type { Metadata } from "next";
+import { createPageMetadata } from "@/lib/metadata";
 
 // map/page.tsx は client component のため、metadata はこの layout から設定する
-export const metadata: Metadata = {
-  title: "キャンパスマップ",
-  description: "瀬田キャンパスのマップから研究室や施設を探せます。",
-};
+export const metadata = createPageMetadata(
+  "キャンパスマップ",
+  "ARCloudのキャンパスマップで、龍谷大学 瀬田キャンパスの研究室や施設の場所を確認できます。",
+);
 
 export default function MapLayout({
   children,

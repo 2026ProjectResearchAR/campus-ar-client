@@ -1,8 +1,36 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ARスキャナー | ARCloud（あるくろーど）</title>
+    <meta name="application-name" content="ARCloud" />
+    <meta name="description" content="ARCloudのARスキャナーです。施設のマーカーをカメラに映してARを体験できます。" />
+    <link rel="stylesheet" href="/brand/theme.css" />
+    <style>
+      .scan-guide {
+        position: fixed;
+        z-index: 10;
+        top: 16px;
+        left: 16px;
+        right: 16px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        max-width: 360px;
+        margin: 0 auto;
+        padding: 12px 16px;
+        border-radius: var(--ar-radius-card);
+        background: color-mix(in srgb, var(--ar-overlay) 92%, transparent);
+        color: var(--ar-surface);
+        font: 500 14px/1.6 "Hiragino Sans", "Noto Sans JP", "Yu Gothic UI", Meiryo, sans-serif;
+        pointer-events: none;
+      }
+      .scan-guide svg {
+        flex-shrink: 0;
+        color: var(--ar-yellow);
+      }
+    </style>
     <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@ar-js-org/ar.js@3.4.8/aframe/build/aframe-ar.js"></script>
     <script>
@@ -36,6 +64,12 @@
     </script>
   </head>
   <body style="margin: 0; overflow: hidden;">
+    <div class="scan-guide" role="status">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+        <path d="M8 3H5a2 2 0 0 0-2 2v3m13-5h3a2 2 0 0 1 2 2v3M3 16v3a2 2 0 0 0 2 2h3m8 0h3a2 2 0 0 0 2-2v-3M7 12h10" />
+      </svg>
+      施設のマーカーをカメラに映してください
+    </div>
     <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;">
       <!-- 照明設定: 3Dモデルを明るく照らす -->
       <a-entity light="type: ambient; intensity: 1.5;"></a-entity>
@@ -44,7 +78,7 @@
       <a-marker preset="hiro" data-marker-id="hiro">
         <!-- マーカーの認識を示す基準の赤いリング -->
         <a-ring
-          color="#c8161d"
+          color="#b53030"
           radius-inner="0.45"
           radius-outer="0.5"
           rotation="-90 0 0"

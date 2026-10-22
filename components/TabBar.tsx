@@ -39,7 +39,7 @@ export default function TabBar() {
         <Link
           href="/screen/scan"
           aria-current={scanActive ? "page" : undefined}
-          className={`pointer-events-auto relative -top-4 mx-auto flex size-[68px] flex-col items-center justify-center gap-0.5 rounded-full text-white no-underline shadow-[0_6px_16px_rgb(200_22_29/0.32)] ring-4 ring-canvas transition-[transform,background-color] active:scale-95 active:bg-brand-strong ${
+          className={`pointer-events-auto relative -top-4 mx-auto flex size-[68px] flex-col items-center justify-center gap-0.5 rounded-full text-white no-underline shadow-action ring-4 ring-canvas transition-[transform,background-color] hover:bg-brand-hover active:scale-95 active:bg-brand-strong ${
             scanActive ? "bg-brand-strong" : "bg-brand"
           }`}
         >
@@ -74,7 +74,9 @@ function SideTab({ href, label, icon, active }: SideTabProps) {
         active ? "text-brand" : "text-muted"
       }`}
     >
-      {icon}
+      <span className={`flex h-7 w-12 items-center justify-center rounded-full ${active ? "bg-accent-soft" : ""}`}>
+        {icon}
+      </span>
       <span className="text-[11px] font-bold leading-none">{label}</span>
     </Link>
   );
