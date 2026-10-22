@@ -1,12 +1,14 @@
 "use client";
 
 import { useCallback } from "react";
-import { useLocalStorage } from "./useLocalStorage";
+import { useLocalStorage, writeLocalStorage } from "./useLocalStorage";
 
 /**
  * スタンプラリー。
- * ログインがないため獲得状況はサーバーではなくこの端末のブラウザに保存する。
- * (ブラウザのデータを消すと獲得状況もリセットされる)
+ * 獲得状況はこの端末のブラウザ (localStorage) を正とし、すぐに画面へ反映する。
+ * あわせて visits API (lib/visits.ts) にも訪問を記録し、サーバー側の記録は
+ * スタンプコレクション画面を開いたときにこの端末の記録へマージする。
+ * (API に接続できない間はこの端末の記録だけで動く)
  */
 
 export type StampSpot = {
@@ -21,11 +23,33 @@ export type StampSpot = {
  */
 export const STAMP_SPOTS: StampSpot[] = [{ markerId: "hiro-placeholder", name: "テストスポット" }];
 
+/** マーカーIDに対応するスタンプ対象スポット (対象外なら undefined) */
+export function findStampSpot(markerId: string): StampSpot | undefined {
+  return STAMP_SPOTS.find((s) => s.markerId === markerId);
+}
+
 /** markerId -> 獲得日時 (ISO 8601) */
 export type CollectedStamps = Record<string, string>;
 
 const KEY = "stamps:v1";
 const EMPTY: CollectedStamps = {};
+
+/**
+ * サーバー側の獲得記録をこの端末の記録へマージする。
+ * 両方にある場合は早いほうの日時を残す。スタンプ対象外のマーカーは無視する。
+ */
+export function mergeCollectedStamps(remote: CollectedStamps): void {
+  writeLocalStorage<CollectedStamps>(KEY, EMPTY, (prev) => {
+    let next = prev;
+    for (const [markerId, at] of Object.entries(remote)) {
+      if (!findStampSpot(markerId) || Number.isNaN(Date.parse(at))) continue;
+      const local = next[markerId];
+      if (local && Date.parse(local) <= Date.parse(at)) continue;
+      next = { ...next, [markerId]: at };
+    }
+    return next;
+  });
+}
 
 export function useStamps() {
   const [collected, setCollected] = useLocalStorage<CollectedStamps>(KEY, EMPTY);
@@ -34,7 +58,7 @@ export function useStamps() {
   const collect = useCallback(
     (markerId: string): boolean => {
       if (collected[markerId]) return false;
-      if (!STAMP_SPOTS.some((s) => s.markerId === markerId)) return false;
+      if (!findStampSpot(markerId)) return false;
       setCollected((prev) =>
         prev[markerId] ? prev : { ...prev, [markerId]: new Date().toISOString() },
       );
