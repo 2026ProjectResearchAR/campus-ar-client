@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useEffect, useId, useState } from "react";
 import { IoIosClose, IoIosMenu } from "react-icons/io";
@@ -52,8 +53,25 @@ export default function NavBar(props: NavBarProps) {
         <div className={`sticky top-0 z-40 mx-auto w-full max-w-[430px] pt-[env(safe-area-inset-top)] border-b border-hairline text-ink ${props.bgColor || 'bg-surface/95 backdrop-blur'}`}>
             {/* 1. ヘッダー: 高さ 56px / 左右 16px */}
             <header className="flex h-14 items-center justify-between pl-4 pr-2">
-                <Link href="/" aria-label="スタート" className="flex items-center no-underline">
-                    <img src="/ryukoku-logo-transparent.png" alt="" className="size-7 shrink-0 object-contain" />
+                <Link href="/" aria-label="ARCloud（あるくろーど）ホーム" className="flex min-h-11 items-center gap-2 no-underline">
+                    <Image
+                        src="/brand/arcloud-icon.png"
+                        alt=""
+                        width={36}
+                        height={36}
+                        className="size-9 shrink-0 object-contain"
+                        loading="eager"
+                        unoptimized
+                    />
+                    <Image
+                        src="/brand/arcloud-wordmark.png"
+                        alt=""
+                        width={130}
+                        height={37}
+                        className="h-auto w-[130px] object-contain"
+                        loading="eager"
+                        unoptimized
+                    />
                 </Link>
                 {/* ハンバーガーメニュー (タップ領域 44px) */}
                 <button
