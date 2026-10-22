@@ -22,6 +22,8 @@ import {
 import { matchesQuery, normalizeSearchText } from "@/lib/search";
 import { useLabSearch } from "@/hooks/useLabSearch";
 import MapSearchResults, { type SearchSpot } from "@/componets/MapSearchResults";
+import type { FavoriteTarget } from "@/lib/favorites";
+import SpotCard from "./_components/SpotCard";
 
 /**
  * マップ画面 (ui.pen frame "Map")
@@ -252,6 +254,8 @@ export default function MapPage() {
     /* マップ画像が未配置のときはプレースホルダーに切り替える */
   }
   const [mapImageAvailable, setMapImageAvailable] = useState(true);
+  // タップしたピンのスポット (下部のカードでお気に入り登録できる)
+  const [selectedSpot, setSelectedSpot] = useState<FavoriteTarget | null>(null);
 
   // 現在地 (Geolocation API)
   const geo = useGeolocation();
@@ -432,7 +436,9 @@ export default function MapPage() {
             key={spot.id}
             type="button"
             style={toScreen(spot.x, spot.y) ?? { visibility: "hidden" }}
-            onClick={() => alert(`${spot.name} (${spot.category})`)}
+            onClick={() =>
+              setSelectedSpot({ id: spot.id, name: spot.name, category: spot.category })
+            }
             // 足の先端が座標を指すよう、ピン全体の下端を基準に配置する
             className="absolute flex -translate-x-1/2 -translate-y-full cursor-pointer flex-col items-center drop-shadow-[0_2px_4px_rgb(31_35_40/0.25)] transition-transform active:scale-95"
           >
@@ -524,6 +530,8 @@ export default function MapPage() {
             {geoNotice}
           </p>
         )}
+
+        {selectedSpot && <SpotCard spot={selectedSpot} onClose={() => setSelectedSpot(null)} />}
       </div>
     </div>
   );
