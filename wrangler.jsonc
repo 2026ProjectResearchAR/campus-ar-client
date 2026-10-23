@@ -17,7 +17,7 @@
   "services": [
     {
       "binding": "WORKER_SELF_REFERENCE",
-      "service": "campus-ar-client"
+      "service": "ar-cloud"
     }
   ],
   "images": {
