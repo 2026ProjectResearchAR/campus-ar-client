@@ -9,6 +9,8 @@ declare global {
           alt?: string;
           "auto-rotate"?: boolean | string;
           "camera-controls"?: boolean | string;
+          "camera-target"?: string;
+          "camera-orbit"?: string;
           "touch-action"?: string;
           "shadow-intensity"?: string | number;
           exposure?: string | number;
