@@ -5,7 +5,7 @@
   "build": {
     "command": "npx opennextjs-cloudflare build"
   },
-  "name": "campus-ar-client",
+  "name": "ar-cloud",
   "compatibility_date": "2026-10-06",
   "compatibility_flags": [
     "global_fetch_strictly_public"
