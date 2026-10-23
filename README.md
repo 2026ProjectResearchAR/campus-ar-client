@@ -98,3 +98,12 @@ ARスキャン画面は iframe に `allow="camera;"` を付けて `public/ArScan
 └── next.config.ts
 ```
 
+
+### センサ情報の表示
+
+マップの施設カードに最新のCO₂濃度・人数・混雑状態・計測時刻を表示します。
+`GET /api/v1/buildings` で施設名に一致する建物IDを取得し、
+`GET /api/v1/sensors/readings/latest?location_id=...` を1分ごとに取得します。
+ハードウェアのPOSTでは `location_id` にその `buildings.id` を指定してください。
+建物の対応や計測値がない場合は未計測、取得失敗時はエラーを表示し、次回更新で再試行します。
+5分以上前の計測値には古いデータである旨を表示します。
