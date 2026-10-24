@@ -40,7 +40,7 @@ function ModelPreview({ url, name }: { url: string; name: string }) {
   return (
     <>
       <Script
-        src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js"
+        src="/model-viewer.min.js"
         type="module"
         strategy="afterInteractive"
         onError={() => setStatus("error")}
@@ -58,7 +58,14 @@ function ModelPreview({ url, name }: { url: string; name: string }) {
         shadow-intensity="1"
         exposure="1.0"
         interaction-prompt="auto"
-        style={{ position: "absolute", inset: 0, width: "100%", height: "100%", background: "transparent" }}
+        style={{
+          position: "absolute",
+          inset: 0,
+          width: "100%",
+          height: "100%",
+          minHeight: "320px",
+          background: "transparent",
+        }}
       />
       {status === "loading" && (
         <div role="status" className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/60 px-6 text-center text-white">
@@ -93,63 +100,66 @@ export default function ModelViewerModal({ spot, modelUrl, onClose }: ModelViewe
   }, [onClose]);
 
   return (
-    <>
-      <div role="dialog" aria-modal="true" aria-label="3D モデルビューアー" className="fixed inset-0 z-[70] flex flex-col bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
-        {/* ヘッダー */}
-        <header className="flex h-14 shrink-0 items-center justify-between px-4 text-white">
-          <div className="flex items-center gap-2">
-            <span className="flex size-7 items-center justify-center rounded-full bg-brand text-[14px]">
-              <LuRotate3D />
-            </span>
-            <span className="text-[14px] font-bold tracking-tight">3D モデルビューアー</span>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="閉じる"
-            className="flex size-9 items-center justify-center rounded-full bg-white/10 text-white/90 transition-colors hover:bg-white/20 active:scale-95"
-          >
-            <LuX size={20} />
-          </button>
-        </header>
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="3D モデルビューアー"
+      className="fixed inset-0 z-[100] flex flex-col bg-black/85 backdrop-blur-md animate-in fade-in duration-200"
+    >
+      {/* ヘッダー */}
+      <header className="flex h-14 shrink-0 items-center justify-between px-4 text-white">
+        <div className="flex items-center gap-2">
+          <span className="flex size-7 items-center justify-center rounded-full bg-brand text-[14px]">
+            <LuRotate3D />
+          </span>
+          <span className="text-[14px] font-bold tracking-tight">3D モデルビューアー</span>
+        </div>
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="閉じる"
+          className="flex size-9 items-center justify-center rounded-full bg-white/10 text-white/90 transition-colors hover:bg-white/20 active:scale-95"
+        >
+          <LuX size={20} />
+        </button>
+      </header>
 
-        {/* 3D モデル表示メイン領域 */}
-        <div className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden">
-          {modelUrl ? (
-            <ModelPreview key={modelUrl} url={modelUrl} name={spot.name} />
-          ) : (
-            <div className="flex flex-col items-center gap-2 text-center text-white/60">
-              <LuRotate3D size={48} className="stroke-[1.5]" />
-              <p className="text-[14px]">このスポットには 3D モデルが登録されていません</p>
-            </div>
-          )}
+      {/* 3D モデル表示メイン領域 */}
+      <div className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden">
+        {modelUrl ? (
+          <ModelPreview key={modelUrl} url={modelUrl} name={spot.name} />
+        ) : (
+          <div className="flex flex-col items-center gap-2 text-center text-white/60">
+            <LuRotate3D size={48} className="stroke-[1.5]" />
+            <p className="text-[14px]">このスポットには 3D モデルが登録されていません</p>
+          </div>
+        )}
+      </div>
+
+      {/* フッター情報カード */}
+      <footer className="shrink-0 rounded-t-3xl border-t border-white/10 bg-surface px-5 pt-4 pb-8 text-ink shadow-2xl">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <span className="inline-block rounded-full bg-brand-soft px-2.5 py-0.5 text-[11px] font-semibold text-brand">
+              {spot.building.name}
+            </span>
+            <h2 className="mt-1 truncate text-[20px] font-bold text-ink">{spot.name}</h2>
+            {spot.description && (
+              <p className="mt-1 text-[13px] leading-relaxed text-muted">{spot.description}</p>
+            )}
+          </div>
+          <div className="shrink-0 pt-1">
+            <FavoriteButton spot={{ id: spot.id, name: spot.name, category: "研究室" }} />
+          </div>
         </div>
 
-        {/* フッター情報カード */}
-        <footer className="shrink-0 rounded-t-3xl border-t border-white/10 bg-surface px-5 pt-4 pb-8 text-ink shadow-2xl">
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0 flex-1">
-              <span className="inline-block rounded-full bg-brand-soft px-2.5 py-0.5 text-[11px] font-semibold text-brand">
-                {spot.building.name}
-              </span>
-              <h2 className="mt-1 truncate text-[20px] font-bold text-ink">{spot.name}</h2>
-              {spot.description && (
-                <p className="mt-1 text-[13px] leading-relaxed text-muted">{spot.description}</p>
-              )}
-            </div>
-            <div className="shrink-0 pt-1">
-              <FavoriteButton spot={{ id: spot.id, name: spot.name, category: "研究室" }} />
-            </div>
-          </div>
-
-          <div className="mt-3 flex items-center gap-1.5 text-[12px] font-bold text-brand">
-            <span className="flex size-4 items-center justify-center rounded-full bg-brand text-white">
-              <LuCheck size={12} strokeWidth={3} />
-            </span>
-            <span>スタンプを獲得しました！</span>
-          </div>
-        </footer>
-      </div>
-    </>
+        <div className="mt-3 flex items-center gap-1.5 text-[12px] font-bold text-brand">
+          <span className="flex size-4 items-center justify-center rounded-full bg-brand text-white">
+            <LuCheck size={12} strokeWidth={3} />
+          </span>
+          <span>スタンプを獲得しました！</span>
+        </div>
+      </footer>
+    </div>
   );
 }

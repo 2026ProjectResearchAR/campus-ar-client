@@ -37,6 +37,7 @@ export default function ArScanView() {
   const spotRequestPending = useRef(false);
   // スキャン枠の発光アニメーション用フラグ
   const [isFrameFlashing, setIsFrameFlashing] = useState(false);
+  const [scanResult, setScanResult] = useState<string | null>(null);
 
   // マーカー・QR からスポットを取得して 3D モーダルを開く処理
   const openSpotModal = useCallback(
@@ -62,6 +63,11 @@ export default function ArScanView() {
         const spot = await getSpotByMarkerId(targetMarkerId);
         console.log("[ArScanView] ✅ Spot API Success:", spot);
         if (spot) {
+          setScanResult("スポット取得成功!\n名前: " + spot.name + "\n3Dモデルを開きます");
+        } else {
+          setScanResult("スポット未登録\nID: " + targetMarkerId);
+        }
+        if (spot) {
           collect(targetMarkerId);
           recordVisit(targetMarkerId).catch((err) =>
             console.warn("[ArScanView] Failed to record visit:", err)
@@ -77,6 +83,8 @@ export default function ArScanView() {
       } catch (err) {
         console.error("[ArScanView] ❌ Spot API Error for markerId:", targetMarkerId, err);
         setScanError({ markerId: targetMarkerId, error: err });
+        const msg = err instanceof Error ? err.message : String(err);
+        setScanResult("❌ APIエラー\n" + msg);
       } finally {
         spotRequestPending.current = false;
         setIsModalLoading(false);
@@ -85,26 +93,49 @@ export default function ArScanView() {
     [collect]
   );
 
-  // iframe からの QR コード検出メッセージ (qrFound) を監視
-  useEffect(() => {
-    const handleMessage = (event: MessageEvent) => {
-      const data = event.data;
-      if (!data) return;
+  // QRコード検出時の共通処理 (iframeからの直接呼び出し & postMessageの両方で動作)
+  const processQrUrl = useCallback((rawUrl: string) => {
+    console.log("[ArScanView]  Processing QR url:", rawUrl);
+    setIsFrameFlashing(true);
+    setTimeout(() => setIsFrameFlashing(false), 1200);
 
-      if (data.type === "qrFound" && typeof data.url === "string") {
-        console.log("[ArScanView] 📥 Received QR raw data:", data.url);
-        const extractedId = extractMarkerIdFromUrl(data.url);
-        console.log("[ArScanView] 🔍 Extracted markerId:", extractedId, "from raw:", data.url);
-        if (extractedId) {
-          openSpotModal(extractedId);
-        } else {
-          console.warn("[ArScanView] ⚠️ Could not extract markerId from URL:", data.url);
-        }
+    const extractedId = extractMarkerIdFromUrl(rawUrl);
+    console.log("[ArScanView] 🔍 Extracted markerId:", extractedId, "from raw:", rawUrl);
+
+    if (extractedId) {
+      setScanResult("QR読取成功!\nマーカーID: " + extractedId + "\n3Dモデルを読み込み中...");
+      openSpotModal(extractedId);
+    } else {
+      setScanResult("マーカーID抽出失敗\nURL: " + rawUrl);
+    }
+  }, [openSpotModal]);
+
+  // iframe からの直接呼び出し (Direct Call) と postMessage の両方を登録
+  useEffect(() => {
+    // 1. 同一オリジンによる直接関数呼び出し
+    (window as Window & { __onQrDetected?: (url: string) => void }).__onQrDetected = (url: string) => {
+      console.log("[ArScanView] Direct __onQrDetected called:", url);
+      processQrUrl(url);
+    };
+
+    // 2. postMessage リスナー (文字列・オブジェクト両対応)
+    const handleMessage = (event: MessageEvent) => {
+      let data = event.data;
+      if (!data) return;
+      if (typeof data === "string") {
+        try { data = JSON.parse(data); } catch {}
+      }
+      if (data && data.type === "qrFound" && typeof data.url === "string") {
+        processQrUrl(data.url);
       }
     };
+
     window.addEventListener("message", handleMessage);
-    return () => window.removeEventListener("message", handleMessage);
-  }, [openSpotModal]);
+    return () => {
+      delete (window as Window & { __onQrDetected?: (url: string) => void }).__onQrDetected;
+      window.removeEventListener("message", handleMessage);
+    };
+  }, [processQrUrl]);
 
   // URL のクエリパラメータ (?url=... または ?markerId=...) による直接オープン
   useEffect(() => {
@@ -174,7 +205,7 @@ export default function ArScanView() {
       {/* カメラ映像 (A-Frame + AR.js + jsQR) - キャッシュバスター付き */}
       <iframe
         ref={iframeRef}
-        src="/ArScanner.html?v=20261023_qr2"
+        src="/ArScanner.html?v=20261024_v3"
         className="w-full h-full border-0 absolute inset-0"
         allow="camera;"
       />
@@ -215,6 +246,24 @@ export default function ArScanView() {
           <span>QRコードを枠内に合わせてください</span>
         </p>
       </div>
+
+      {/* スキャン結果カード (画面中央に大きく表示) */}
+      {scanResult && (
+        <div className="fixed inset-x-4 top-20 z-[9999] rounded-2xl bg-black/90 p-4 text-white shadow-2xl border-2 border-emerald-400 backdrop-blur-md">
+          <div className="flex items-center justify-between pb-2 border-b border-white/20">
+            <span className="text-xs font-bold text-emerald-400">📱 QRコード検出結果</span>
+            <button
+              onClick={() => setScanResult(null)}
+              className="text-xs bg-white/20 px-2 py-0.5 rounded-full text-white"
+            >
+              閉じる
+            </button>
+          </div>
+          <p className="mt-2 text-xs font-mono leading-relaxed whitespace-pre-wrap break-all text-white/90">
+            {scanResult}
+          </p>
+        </div>
+      )}
 
       {/* QR スポット読み込み中のインジケーター */}
       {isModalLoading && (

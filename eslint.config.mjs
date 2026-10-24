@@ -17,6 +17,7 @@ const eslintConfig = defineConfig([
     ".wrangler/**",
     ".claude/worktrees/**",
     "public/jsQR.js",
+    "public/model-viewer.min.js",
   ]),
 ]);
 

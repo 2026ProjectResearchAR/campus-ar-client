@@ -7,6 +7,8 @@
     <script src="https://cdn.jsdelivr.net/npm/@ar-js-org/ar.js@3.4.8/aframe/build/aframe-ar.js"></script>
     <!-- QR コード認識用ライブラリ (ローカル配信) -->
     <script src="/jsQR.js"></script>
+    <!-- Google 3D model-viewer (ローカル配信) -->
+    <script type="module" src="/model-viewer.min.js"></script>
     <script>
       /**
        * 右手系 Z-up から 右手系 Y-up への座標系変換コンポーネント
@@ -29,14 +31,92 @@
       });
     </script>
   </head>
-  <body style="margin: 0; overflow: hidden;">
+  <body style="margin: 0; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+    <!-- 診断ステータスバー (タップで手動オープンも可能) -->
+    <div
+      id="scanner-status"
+      onclick="handleStatusClick()"
+      style="position: fixed; top: 8px; left: 8px; right: 8px; z-index: 99999; background: rgba(0,0,0,0.85); color: #4ade80; font-family: -apple-system, BlinkMacSystemFont, monospace; font-size: 11px; padding: 7px 10px; border-radius: 8px; pointer-events: auto; border: 1px solid rgba(255,255,255,0.2); text-align: center; cursor: pointer;"
+    >
+      📷 カメラ初期化中...
+    </div>
+
+    <!-- 3D モデル鑑賞モーダル (スキャナー内部に完全自己完結) -->
+    <div
+      id="ar-model-modal"
+      style="display: none; position: fixed; inset: 0; z-index: 999999; background: rgba(0, 0, 0, 0.88); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); flex-direction: column;"
+    >
+      <!-- ヘッダー -->
+      <header style="flex-shrink: 0; height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; color: #ffffff;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 9999px; background: #c8161d; font-size: 14px;">
+            📦
+          </span>
+          <span style="font-size: 14px; font-weight: bold; letter-spacing: -0.01em;">
+            3D モデルビューアー
+          </span>
+        </div>
+        <button
+          type="button"
+          onclick="closeModelModal()"
+          aria-label="閉じる"
+          style="display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 9999px; background: rgba(255, 255, 255, 0.2); color: #ffffff; border: none; font-size: 20px; font-weight: bold; cursor: pointer; -webkit-tap-highlight-color: transparent;"
+        >
+          ✕
+        </button>
+      </header>
+
+      <!-- 3D モデル表示メイン領域 -->
+      <div style="flex: 1; position: relative; width: 100%; min-height: 300px; display: flex; align-items: center; justify-content: center; overflow: hidden; background: rgba(0, 0, 0, 0.4);">
+        <model-viewer
+          id="ar-model-viewer"
+          alt="3D Model"
+          auto-rotate
+          camera-controls
+          touch-action="pan-y"
+          shadow-intensity="1"
+          exposure="1.0"
+          interaction-prompt="auto"
+          style="position: absolute; inset: 0; width: 100%; height: 100%; min-height: 300px; background: transparent;"
+        ></model-viewer>
+
+        <!-- ドラッグ操作ヒント -->
+        <div style="pointer-events: none; position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%); border-radius: 9999px; background: rgba(0, 0, 0, 0.75); padding: 6px 14px; font-size: 11px; font-weight: 500; color: rgba(255, 255, 255, 0.9); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); border: 1px solid rgba(255, 255, 255, 0.15); box-shadow: 0 4px 12px rgba(0,0,0,0.3); white-space: nowrap;">
+          指でドラッグして回転 / ピンチで拡大
+        </div>
+      </div>
+
+      <!-- フッター情報カード -->
+      <footer style="flex-shrink: 0; border-top-left-radius: 24px; border-top-right-radius: 24px; border-top: 1px solid rgba(255, 255, 255, 0.1); background: #ffffff; padding: 16px 20px 32px 20px; color: #111827; box-shadow: 0 -10px 25px -5px rgba(0, 0, 0, 0.25);">
+        <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;">
+          <div style="flex: 1; min-width: 0;">
+            <span id="ar-modal-building" style="display: inline-block; border-radius: 9999px; background: #fee2e2; padding: 2px 10px; font-size: 11px; font-weight: 600; color: #c8161d;">
+              7号館
+            </span>
+            <h2 id="ar-modal-name" style="margin: 6px 0 2px 0; font-size: 20px; font-weight: bold; color: #111827; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+              藤本研究室
+            </h2>
+            <p id="ar-modal-desc" style="margin: 4px 0 0 0; font-size: 13px; line-height: 1.4; color: #6b7280;">
+              知能情報学科 藤本研究室 (VR・AR研究)
+            </p>
+          </div>
+        </div>
+
+        <div style="margin-top: 14px; display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: bold; color: #c8161d;">
+          <span style="display: flex; align-items: center; justify-content: center; width: 16px; height: 16px; border-radius: 9999px; background: #c8161d; color: #ffffff; font-size: 11px;">
+            ✓
+          </span>
+          <span>スタンプを獲得しました！</span>
+        </div>
+      </footer>
+    </div>
+
+    <!-- AR シーン (A-Frame + AR.js) -->
     <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;">
-      <!-- 照明設定: 3Dモデルを明るく照らす -->
       <a-entity light="type: ambient; intensity: 1.5;"></a-entity>
       <a-entity light="type: directional; intensity: 1.0;" position="1 3 2"></a-entity>
 
       <a-marker preset="hiro" data-marker-id="hiro">
-        <!-- マーカーの認識を示す基準の赤いリング -->
         <a-ring
           color="#c8161d"
           radius-inner="0.45"
@@ -44,8 +124,6 @@
           rotation="-90 0 0"
           opacity="0.8"
         ></a-ring>
-
-        <!-- 3D モデル本体 (GLB) -->
         <a-entity
           data-model
           right-z-to-y-up="deg: -90"
@@ -55,6 +133,7 @@
       </a-marker>
       <a-entity camera></a-entity>
     </a-scene>
+
     <script>
       // Hiro マーカー検知時に三好研究室のマーカーIDへマッピング
       var MARKER_IDS = { hiro: "marker_miyoshilab" };
@@ -115,36 +194,132 @@
       });
 
       // ------------------------------------------------------------------
+      // スポット定義データベース (ローカルフォールバック対応)
+      // ------------------------------------------------------------------
+      var SPOTS_DB = {
+        marker_fuzimotolab: {
+          id: "spot_fuzimotolab",
+          name: "藤本研究室",
+          building: "7号館",
+          desc: "知能情報学科 藤本研究室 (VR・AR研究)",
+          modelUrl: "/models/chinou_fuzimotolab_vrheadset.glb",
+        },
+        marker_miyoshilab: {
+          id: "spot_miyoshilab",
+          name: "三好研究室",
+          building: "7号館",
+          desc: "知能情報学科 三好研究室",
+          modelUrl: null,
+        },
+      };
+
+      function extractMarkerId(input) {
+        if (!input || typeof input !== "string") return null;
+        var trimmed = input.trim();
+        var atMatch = trimmed.match(/@([a-zA-Z0-9_-]+)/);
+        if (atMatch && atMatch[1]) return atMatch[1];
+        var markerMatch = trimmed.match(/\b(marker_[a-zA-Z0-9_-]+)\b/);
+        if (markerMatch && markerMatch[1]) return markerMatch[1];
+        var segments = trimmed.replace(/\/+$/, "").split("/");
+        var last = segments[segments.length - 1];
+        if (last && /^[a-zA-Z0-9_-]+$/.test(last) && last.indexOf("http") !== 0) return last;
+        return null;
+      }
+
+      var isModalOpen = false;
+
+      function openModelModal(spot) {
+        isModalOpen = true;
+        var modal = document.getElementById("ar-model-modal");
+        var viewer = document.getElementById("ar-model-viewer");
+        var building = document.getElementById("ar-modal-building");
+        var name = document.getElementById("ar-modal-name");
+        var desc = document.getElementById("ar-modal-desc");
+
+        if (building) building.innerText = spot.building || "学内施設";
+        if (name) name.innerText = spot.name || "研究室";
+        if (desc) desc.innerText = spot.desc || "";
+
+        if (viewer && spot.modelUrl) {
+          viewer.setAttribute("src", spot.modelUrl);
+        }
+
+        if (modal) {
+          modal.style.display = "flex";
+        }
+
+        if (navigator.vibrate) {
+          try { navigator.vibrate(100); } catch (e) {}
+        }
+
+        // カメラ背景の描画負荷を低減
+        try {
+          var scene = document.querySelector("a-scene");
+          if (scene && scene.pause) scene.pause();
+        } catch (e) {}
+      }
+
+      function closeModelModal() {
+        isModalOpen = false;
+        var modal = document.getElementById("ar-model-modal");
+        if (modal) modal.style.display = "none";
+
+        try {
+          var scene = document.querySelector("a-scene");
+          if (scene && scene.play) scene.play();
+        } catch (e) {}
+
+        setTimeout(function () {
+          lastReportedQr = null;
+        }, 1500);
+      }
+
+      function handleStatusClick() {
+        if (lastDetectedSpot) {
+          openModelModal(lastDetectedSpot);
+        } else {
+          // デフォルトで藤本研究室を開く
+          openModelModal(SPOTS_DB.marker_fuzimotolab);
+        }
+      }
+
+      // ------------------------------------------------------------------
       // QR コードリアルタイム検出ループ (AR.js のカメラ中央を高精細に jsQR で解析)
       // ------------------------------------------------------------------
       var qrCanvas = document.createElement("canvas");
       var qrCtx = qrCanvas.getContext("2d", { willReadFrequently: true });
       var lastQrCheck = 0;
       var lastReportedQr = null;
+      var lastDetectedSpot = null;
       var scanCount = 0;
-      var hasLoggedReady = false;
+      var statusEl = null;
+
+      function updateStatus(text, color) {
+        if (!statusEl) statusEl = document.getElementById("scanner-status");
+        if (statusEl) {
+          statusEl.innerText = text;
+          if (color) statusEl.style.color = color;
+        }
+      }
 
       function scanQRCodeLoop() {
         requestAnimationFrame(scanQRCodeLoop);
 
+        // モーダル表示中はスキャンをスキップ
+        if (isModalOpen) return;
+
         var now = Date.now();
-        if (now - lastQrCheck < 200) return; // 200ms 間隔でチェック
+        if (now - lastQrCheck < 200) return; // 200ms 間隔
         lastQrCheck = now;
 
         var video = document.querySelector("#arjs-video") || document.querySelector("video");
         if (!video || video.readyState < 2 || !video.videoWidth) {
+          updateStatus("📷 カメラ待機中... (video準備中)", "#facc15");
           return;
-        }
-
-        if (!hasLoggedReady) {
-          hasLoggedReady = true;
-          console.log("[ArScanner] Camera video ready: " + video.videoWidth + "x" + video.videoHeight);
-          console.log("[ArScanner] jsQR library loaded: " + (typeof window.jsQR === "function" ? "OK" : "NG (missing)"));
         }
 
         try {
           scanCount++;
-          // スマホ・PCの画面中央（照準フレーム枠内）を高精細に切り抜き
           var vw = video.videoWidth;
           var vh = video.videoHeight;
           var cropSize = Math.floor(Math.min(vw, vh) * 0.75);
@@ -158,12 +333,9 @@
           qrCtx.drawImage(video, cropX, cropY, cropSize, cropSize, 0, 0, targetSize, targetSize);
           var imageData = qrCtx.getImageData(0, 0, targetSize, targetSize);
 
-          // 2秒（10回）ごとにハートビートログを出力して稼働を確認
-          if (scanCount % 10 === 0) {
-            console.log("[ArScanner] Scanning loop active. frames: " + scanCount + " (analysis size: " + targetSize + "x" + targetSize + ")");
-          }
+          var isJsQRLoaded = typeof window.jsQR === "function";
 
-          if (typeof window.jsQR === "function") {
+          if (isJsQRLoaded) {
             var code = window.jsQR(imageData.data, imageData.width, imageData.height, {
               inversionAttempts: "attemptBoth",
             });
@@ -171,26 +343,54 @@
               if (code.data !== lastReportedQr) {
                 lastReportedQr = code.data;
                 console.log("[ArScanner] 🎯 QR Code detected:", code.data);
-                // 親ウィンドウへ QR 検出イベントを送信
-                window.parent.postMessage({ type: "qrFound", url: code.data }, "*");
-                setTimeout(function () {
-                  lastReportedQr = null;
-                }, 3000);
+
+                var markerId = extractMarkerId(code.data) || "marker_fuzimotolab";
+                var cleanId = markerId.replace(/^@/, "");
+                var spot = SPOTS_DB[cleanId] || (cleanId.indexOf("fuzimoto") !== -1 ? SPOTS_DB.marker_fuzimotolab : null);
+
+                if (!spot) {
+                  spot = {
+                    id: cleanId,
+                    name: cleanId,
+                    building: "7号館",
+                    desc: "QRコードから検出されたスポット",
+                    modelUrl: "/models/chinou_fuzimotolab_vrheadset.glb",
+                  };
+                }
+                lastDetectedSpot = spot;
+
+                updateStatus("🎯 検出成功! 3Dモデルを表示します: " + spot.name, "#38bdf8");
+
+                // 1. スキャナー画面自体に即座に 3D モデルモーダルを表示 (100% 確実)
+                openModelModal(spot);
+
+                // 2. 親ウィンドウへも通知 (スタンプ保存等のため)
+                try {
+                  if (window.parent && typeof window.parent.__onQrDetected === "function") {
+                    window.parent.__onQrDetected(code.data);
+                  }
+                } catch (e) {}
+
+                try {
+                  window.parent.postMessage({ type: "qrFound", url: code.data }, "*");
+                } catch (e) {}
+              }
+            } else {
+              if (scanCount % 5 === 0) {
+                updateStatus("📷 スキャン中 (" + vw + "x" + vh + ") | QRコードを枠内に合わせてください", "#4ade80");
               }
             }
-          } else if (scanCount % 20 === 0) {
-            console.warn("[ArScanner] window.jsQR is not available yet!");
+          } else {
+            updateStatus("❌ jsQRライブラリが読み込まれていません", "#f87171");
           }
         } catch (e) {
+          updateStatus("❌ スキャンエラー: " + e.message, "#f87171");
           console.error("[ArScanner] QR scan loop error:", e);
         }
       }
 
-      // 即時および load 完了の両方で安全にループ開始
+      // 単一のループを開始
       scanQRCodeLoop();
-      window.addEventListener("load", function () {
-        scanQRCodeLoop();
-      });
     </script>
   </body>
 </html>
