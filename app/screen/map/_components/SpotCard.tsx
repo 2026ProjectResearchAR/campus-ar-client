@@ -2,6 +2,7 @@
 
 import { LuX } from "react-icons/lu";
 
+import SensorReading from "@/components/SensorReading";
 import FavoriteButton from "@/components/FavoriteButton";
 import type { FavoriteTarget } from "@/lib/favorites";
 
@@ -25,6 +26,7 @@ export default function SpotCard({
       <div className="min-w-0 flex-1">
         <p className="truncate text-[16px] font-bold text-ink">{spot.name}</p>
         <p className="text-[12px] text-muted">{spot.category}</p>
+        <SensorReading key={spot.name} buildingName={spot.name} />
       </div>
       <FavoriteButton spot={spot} />
       <button
