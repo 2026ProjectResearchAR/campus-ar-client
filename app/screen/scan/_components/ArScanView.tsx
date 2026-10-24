@@ -33,12 +33,17 @@ export default function ArScanView() {
   // 方式1: QRコード検出で開く 3D モデル鑑賞モーダル
   const [modalSpot, setModalSpot] = useState<Spot | null>(null);
   const [isModalLoading, setIsModalLoading] = useState(false);
+  const [scanError, setScanError] = useState<{ markerId: string; error: unknown } | null>(null);
+  const spotRequestPending = useRef(false);
   // スキャン枠の発光アニメーション用フラグ
   const [isFrameFlashing, setIsFrameFlashing] = useState(false);
 
   // マーカー・QR からスポットを取得して 3D モーダルを開く処理
   const openSpotModal = useCallback(
     async (targetMarkerId: string) => {
+      if (spotRequestPending.current) return;
+      spotRequestPending.current = true;
+      setScanError(null);
       // スキャン枠を一時的にグリーンに発光
       setIsFrameFlashing(true);
       setTimeout(() => setIsFrameFlashing(false), 1200);
@@ -64,10 +69,16 @@ export default function ArScanView() {
           setModalSpot(spot);
         } else {
           console.warn("[ArScanView] ⚠️ Spot not found (null) for markerId:", targetMarkerId);
+          setScanError({
+            markerId: targetMarkerId,
+            error: new Error("このQRコードに対応するスポットが登録されていません"),
+          });
         }
       } catch (err) {
         console.error("[ArScanView] ❌ Spot API Error for markerId:", targetMarkerId, err);
+        setScanError({ markerId: targetMarkerId, error: err });
       } finally {
+        spotRequestPending.current = false;
         setIsModalLoading(false);
       }
     },
@@ -212,6 +223,16 @@ export default function ArScanView() {
             <span className="size-4 animate-spin rounded-full border-2 border-brand border-t-transparent" />
             <span className="text-[13px] font-bold text-ink">3Dモデルを取得中...</span>
           </div>
+        </div>
+      )}
+
+      {/* QR認識後のスポット取得エラー */}
+      {scanError && (
+        <div className="absolute inset-x-3 bottom-3 z-50">
+          <ErrorState
+            error={scanError.error}
+            onRetry={() => void openSpotModal(scanError.markerId)}
+          />
         </div>
       )}
 
