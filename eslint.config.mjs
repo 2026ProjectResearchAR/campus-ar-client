@@ -12,6 +12,12 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Generated files and vendored dependencies:
+    ".open-next/**",
+    ".wrangler/**",
+    ".claude/worktrees/**",
+    "public/jsQR.js",
+    "public/model-viewer.min.js",
   ]),
 ]);
 
