@@ -1,32 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import Script from "next/script";
 import { LuCheck, LuRotate3D, LuX } from "react-icons/lu";
 
 import FavoriteButton from "@/components/FavoriteButton";
 import type { Spot } from "@/lib/spots";
-
-declare global {
-  namespace React.JSX {
-    interface IntrinsicElements {
-      "model-viewer": React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLElement> & {
-          src?: string;
-          alt?: string;
-          "auto-rotate"?: boolean | string;
-          "camera-controls"?: boolean | string;
-          "touch-action"?: string;
-          "shadow-intensity"?: string | number;
-          exposure?: string | number;
-          "interaction-prompt"?: string;
-          loading?: string;
-        },
-        HTMLElement
-      >;
-    }
-  }
-}
 
 type ModelViewerModalProps = {
   spot: Spot;
@@ -35,8 +14,6 @@ type ModelViewerModalProps = {
 };
 
 export default function ModelViewerModal({ spot, modelUrl, onClose }: ModelViewerModalProps) {
-  const [modelLoaded, setModelLoaded] = useState(false);
-
   // Esc キーで閉じる
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -87,7 +64,6 @@ export default function ModelViewerModal({ spot, modelUrl, onClose }: ModelViewe
               exposure="1.0"
               interaction-prompt="auto"
               style={{ width: "100%", height: "100%", background: "transparent" }}
-              onLoad={() => setModelLoaded(true)}
             />
           ) : (
             <div className="flex flex-col items-center gap-2 text-center text-white/60">

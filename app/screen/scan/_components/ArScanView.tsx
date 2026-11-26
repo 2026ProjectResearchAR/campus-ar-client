@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { LuQrCode, LuScanLine } from "react-icons/lu";
+import { LuQrCode } from "react-icons/lu";
 
 import ErrorState from "@/components/ErrorState";
 import LoadingState from "@/components/LoadingState";
@@ -103,9 +103,13 @@ export default function ArScanView() {
     const markerParam = params.get("markerId") || params.get("marker_id");
 
     const target = markerParam || (urlParam ? extractMarkerIdFromUrl(urlParam) : null);
-    if (target) {
-      openSpotModal(target);
-    }
+    if (!target) return;
+
+    // 初回描画後に開き、アンマウント時や Effect の再実行時は予約を取り消す。
+    const frame = requestAnimationFrame(() => {
+      void openSpotModal(target);
+    });
+    return () => cancelAnimationFrame(frame);
   }, [openSpotModal]);
 
   // AR マーカー (Hiro 等) 検知時のモデル URL 送信
