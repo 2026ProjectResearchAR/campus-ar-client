@@ -1,92 +1,95 @@
 "use client";
 
 import type { ReactNode } from "react";
-import {
-  usePermission,
-  type PermissionKind,
-  type PermissionStatus,
-} from "@/hooks/usePermission";
 
-const LABEL: Record<PermissionStatus, string> = {
-  granted: "許可済み",
-  denied: "拒否",
-  prompt: "未設定",
-  unsupported: "確認できません",
+import { type PermissionKind, usePermission } from "@/hooks/usePermission";
+
+type Display = "checking" | "granted" | "denied" | "prompt" | "unknown";
+
+const BADGE: Record<Display, { label: string; className: string }> = {
+  checking: { label: "確認中", className: "bg-canvas text-muted" },
+  granted: { label: "許可済み", className: "bg-[#e6f4ea] text-[#1e7b34]" },
+  denied: { label: "拒否", className: "bg-brand-soft text-brand" },
+  prompt: { label: "未設定", className: "bg-canvas text-muted" },
+  unknown: { label: "確認できません", className: "bg-canvas text-muted" },
 };
 
 const GUIDE = [
   {
-    title: "iOS Safari",
+    title: "iPhone (Safari)",
     steps:
-      "「設定」アプリ > Safari > 位置情報 / カメラ から「許可」または「確認」を選択。サイト単位では、アドレスバーの「ぁあ」> Webサイトの設定 から変更できます。",
+      "アドレスバーの「ぁあ」→「Webサイトの設定」で位置情報・カメラを「許可」にします。項目がない場合は「設定」アプリ →「アプリ」→「Safari」→ 位置情報 / カメラ を確認してください。",
   },
   {
-    title: "Android Chrome",
+    title: "Android (Chrome)",
     steps:
-      "アドレスバー左の設定アイコン > 権限 から位置情報 / カメラを「許可」にします。または Chrome の「設定」> サイトの設定 から変更できます。",
+      "アドレスバー左のアイコン →「権限」で位置情報・カメラを許可します。または Chrome の「設定」→「サイトの設定」から変更できます。",
   },
 ];
 
 export default function PermissionItem({
   kind,
   label,
+  usage,
   icon,
 }: {
   kind: PermissionKind;
   label: string;
+  /** 何に使うかの説明 */
+  usage: string;
   icon: ReactNode;
 }) {
-  const { status, requestPermission } = usePermission(kind);
-  const canRequest = status === "prompt" || status === "unsupported";
+  const { state, requested, request } = usePermission(kind);
+  const display: Display =
+    state === "unsupported" ? (requested ?? "unknown") : state;
+
+  const canRequest = display === "prompt" || display === "unknown";
+  const showGuide = display === "denied" || display === "unknown";
+  const badge = BADGE[display];
 
   return (
-    <div className="space-y-2">
+    <div className="p-4">
       <div className="flex items-center gap-3">
-        <span className="shrink-0 text-ink">{icon}</span>
-        <span className="text-[16px] font-semibold text-black">{label}</span>
+        <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-brand-soft text-brand">
+          {icon}
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="text-[15px] font-semibold text-ink">{label}</p>
+          <p className="text-[12px] text-muted">{usage}</p>
+        </div>
         <span
-          className={`ml-auto rounded-full px-3 py-0.5 text-[12px] font-semibold ${
-            status === "granted"
-              ? "bg-green-100 text-green-700"
-              : status === "denied"
-                ? "bg-brand/10 text-brand"
-                : "bg-gray-100 text-black/60"
-          }`}
+          role="status"
+          className={`shrink-0 rounded-full px-2.5 py-1 text-[12px] font-semibold ${badge.className}`}
         >
-          {status ? LABEL[status] : "確認中"}
+          {badge.label}
         </span>
       </div>
 
       {canRequest && (
         <button
           type="button"
-          onClick={requestPermission}
-          className="h-[40px] w-full rounded-[12px] bg-brand text-[14px] font-semibold text-white"
+          onClick={request}
+          className="mt-3 h-11 w-full rounded-xl bg-brand text-[14px] font-bold text-white active:bg-brand-strong"
         >
-          {label}を許可する
+          {label}の利用を許可する
         </button>
       )}
 
-      {status === "unsupported" && (
-        <p className="text-[12px] text-black/60">
-          このブラウザでは権限の状態を確認できません。上のボタンで許可を求めるか、下記の手順で設定してください。
-        </p>
-      )}
-
-      {(status === "denied" || status === "unsupported") && (
-        <div className="space-y-2 rounded-[12px] bg-gray-50 p-3">
-          <p className="text-[12px] font-semibold text-black">
-            ブラウザの設定から許可する方法
-          </p>
+      {showGuide && (
+        <details className="mt-3 rounded-xl bg-canvas px-3 py-2 text-[12px] leading-relaxed text-muted">
+          <summary className="cursor-pointer py-1 font-semibold text-ink">
+            {display === "denied"
+              ? "ブラウザの設定から許可する方法"
+              : "このブラウザでは状態を確認できません。設定方法"}
+          </summary>
           {GUIDE.map((g) => (
-            <div key={g.title}>
-              <p className="text-[12px] font-semibold text-black/80">
-                {g.title}
-              </p>
-              <p className="text-[12px] text-black/60">{g.steps}</p>
+            <div key={g.title} className="mt-2">
+              <p className="font-semibold text-ink">{g.title}</p>
+              <p>{g.steps}</p>
             </div>
           ))}
-        </div>
+          <p className="mt-2">設定を変えたら、このページを再読み込みしてください。</p>
+        </details>
       )}
     </div>
   );

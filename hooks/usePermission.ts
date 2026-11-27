@@ -4,72 +4,84 @@ import { useCallback, useEffect, useState } from "react";
 
 export type PermissionKind = "geolocation" | "camera";
 
-/** unsupported: Permissions API 未対応 (iOS Safari の一部など) で状態を取得できない */
-export type PermissionStatus = "granted" | "denied" | "prompt" | "unsupported";
+/**
+ * - checking    : 確認中 (初回描画・SSR)
+ * - unsupported : Permissions API 未対応 (iOS Safari の一部など) で状態を取得できない
+ */
+export type PermissionState = "checking" | "granted" | "denied" | "prompt" | "unsupported";
 
-async function queryHandle(kind: PermissionKind) {
-  if (!navigator.permissions?.query) return null;
+async function queryPermission(kind: PermissionKind): Promise<PermissionStatus | null> {
+  if (typeof navigator === "undefined" || !navigator.permissions?.query) return null;
   try {
-    return await navigator.permissions.query({
-      name: kind as PermissionName,
-    });
+    return await navigator.permissions.query({ name: kind as PermissionName });
   } catch {
-    // "camera" 未対応ブラウザは TypeError を投げる
+    // "camera" を知らないブラウザ (Firefox の一部など) は TypeError を投げる
     return null;
   }
 }
 
-async function request(kind: PermissionKind): Promise<void> {
+/** ブラウザの許可ダイアログを出す。許可されれば resolve、拒否・未対応なら reject */
+async function requestAccess(kind: PermissionKind): Promise<void> {
   if (kind === "geolocation") {
     await new Promise<void>((resolve, reject) => {
       if (!navigator.geolocation) return reject(new Error("unsupported"));
-      navigator.geolocation.getCurrentPosition(() => resolve(), reject, {
-        timeout: 10000,
-      });
+      navigator.geolocation.getCurrentPosition(
+        () => resolve(),
+        // 位置が取れない・タイムアウトは許可自体はされているので成功扱い
+        (err) => (err.code === err.PERMISSION_DENIED ? reject(err) : resolve()),
+        { timeout: 10000 },
+      );
     });
     return;
   }
+  if (!navigator.mediaDevices?.getUserMedia) throw new Error("unsupported");
   const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+  // 許可を得るためだけに起動したので、すぐにカメラを止める
   stream.getTracks().forEach((t) => t.stop());
 }
 
 /** 権限の現在状態の取得・変更監視・許可リクエストをまとめたフック */
 export function usePermission(kind: PermissionKind) {
-  const [status, setStatus] = useState<PermissionStatus | null>(null);
+  const [state, setState] = useState<PermissionState>("checking");
+  /** Permissions API 未対応時に、リクエスト結果から分かった状態 */
+  const [requested, setRequested] = useState<"granted" | "denied" | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-    let handle: globalThis.PermissionStatus | null = null;
+    let status: PermissionStatus | null = null;
     const onChange = () => {
-      if (handle) setStatus(handle.state);
+      if (status) setState(status.state);
     };
 
-    (async () => {
-      handle = await queryHandle(kind);
+    queryPermission(kind).then((s) => {
       if (cancelled) return;
-      if (!handle) {
-        setStatus("unsupported");
+      status = s;
+      if (!s) {
+        setState("unsupported");
         return;
       }
-      setStatus(handle.state);
-      handle.addEventListener("change", onChange);
-    })();
+      setState(s.state);
+      s.addEventListener("change", onChange);
+    });
 
     return () => {
       cancelled = true;
-      handle?.removeEventListener("change", onChange);
+      status?.removeEventListener("change", onChange);
     };
   }, [kind]);
 
-  const requestPermission = useCallback(async () => {
+  const request = useCallback(async () => {
+    let ok = false;
     try {
-      await request(kind);
+      await requestAccess(kind);
+      ok = true;
     } catch {
-      // 拒否・未対応いずれも再取得した状態で表示する
+      // 拒否・タイムアウト・未対応
     }
-    const handle = await queryHandle(kind);
-    if (handle) setStatus(handle.state);
+    const s = await queryPermission(kind);
+    if (s) setState(s.state);
+    else setRequested(ok ? "granted" : "denied");
   }, [kind]);
 
-  return { status, requestPermission };
+  return { state, requested, request };
 }
