@@ -21,6 +21,36 @@ import ApiHealthCheck from "@/components/ApiHealthCheck";
  *   - メニュー行     : 高さ 56px / radius 16 / 行間 8px
  *   - 行内           : アイコン 36px の薄赤タイル / ラベル 15px semibold
  */
+
+const MENU: { label: string; href?: string; icon: React.ReactNode }[] = [
+  { label: "スタンプコレクション", icon: <LuAward size={25} strokeWidth={1.6} /> },
+  { label: "避難ガイド・安全情報", icon: <LuShield size={25} strokeWidth={2.5} /> },
+  { label: "お気に入り", icon: <LuHeart size={25} strokeWidth={2} /> },
+  { label: "メモ", icon: <LuSquarePen size={25} strokeWidth={2} /> },
+  { label: "イベント案内", icon: <LuCalendar size={25} strokeWidth={2} /> },
+  { label: "設定", href: "/screen/mypage/settings", icon: <LuSettings size={25} strokeWidth={1.6} /> },
+];
+
+/** href があればリンク、なければ (未実装の) ボタンとして描画する */
+function Wrapper({
+  href,
+  className,
+  children,
+}: {
+  href?: string;
+  className: string;
+  children: React.ReactNode;
+}) {
+  return href ? (
+    <Link href={href} className={className}>
+      {children}
+    </Link>
+  ) : (
+    <button type="button" className={className}>
+      {children}
+    </button>
+  );
+}
 type MenuItem = { label: string; icon: React.ReactNode; href?: string };
 
 const MENU: MenuItem[] = [
@@ -57,6 +87,7 @@ export const metadata: Metadata = {
   description: "プロフィールや獲得したバッジ、お気に入りを確認できます。",
 };
 
+
 export default function MyPage() {
   return (
     <div className="relative flex-1 overflow-hidden pt-8">
@@ -82,6 +113,22 @@ export default function MyPage() {
         <ul className="mt-10 space-y-2">
           {MENU.map((item) => (
             <li key={item.label}>
+
+              <Wrapper
+                href={item.href}
+                className="flex h-[50px] w-full items-center rounded-[15px] border border-hairline bg-white pl-[20px] pr-[30px] text-left shadow-card transition-colors hover:bg-gray-50"
+              >
+                <span className="shrink-0 text-ink">{item.icon}</span>
+                <span className="ml-[14px] text-[16px] font-semibold text-black">
+                  {item.label}
+                </span>
+                <LuChevronRight
+                  size={26}
+                  strokeWidth={2.5}
+                  className="ml-auto shrink-0 text-ink"
+                />
+              </Wrapper>
+
               {item.href ? (
                 <Link href={item.href} className={ROW_CLASS}>
                   <MenuRowContent item={item} />

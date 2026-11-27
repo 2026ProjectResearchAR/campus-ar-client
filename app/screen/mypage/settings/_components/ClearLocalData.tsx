@@ -1,6 +1,9 @@
 "use client";
 
 import { useState } from "react";
+
+export default function ClearLocalData() {
+  const [done, setDone] = useState(false);
 import { LuTrash2 } from "react-icons/lu";
 
 import { clearLocalData } from "@/lib/useLocalStorage";
@@ -12,12 +15,16 @@ export default function ClearLocalData() {
   const handleClear = () => {
     if (
       !window.confirm(
-        "スタンプの獲得状況など、この端末に保存したデータをすべて削除します。元に戻せません。よろしいですか？",
+        "お気に入り・メモなど、この端末に保存したデータをすべて削除します。この操作は取り消せません。よろしいですか？",
       )
     ) {
       return;
     }
     try {
+      localStorage.clear();
+      setDone(true);
+    } catch {
+      window.alert("データを削除できませんでした。");
       const count = clearLocalData();
       setMessage(count > 0 ? "保存データを削除しました。" : "削除するデータはありませんでした。");
     } catch {
