@@ -1,15 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { LuAward, LuChevronLeft, LuLock, LuTrophy } from "react-icons/lu";
+import { useEffect, useState } from "react";
+import { LuAward, LuChevronLeft, LuCloudOff, LuLock, LuTrophy } from "react-icons/lu";
 
 import { STAMP_SPOTS, useStamps } from "@/lib/stamps";
+import { type SyncResult, syncStampsFromServer } from "@/lib/visits";
 
 const dateFormat = new Intl.DateTimeFormat("ja-JP", { month: "numeric", day: "numeric" });
 
 export default function StampCollection() {
   const { collected, count, total, isComplete } = useStamps();
   const percent = total === 0 ? 0 : Math.round((count / total) * 100);
+  const sync = useServerSync();
 
   return (
     <div className="flex-1 px-5 pt-4 pb-[calc(var(--tabbar-h)+24px)]">
@@ -88,9 +91,35 @@ export default function StampCollection() {
         })}
       </ul>
 
+      {sync === "offline" && (
+        <p role="status" className="mt-6 flex items-start gap-2 rounded-xl bg-brand-soft px-3 py-2 text-[12px] leading-relaxed text-ink">
+          <LuCloudOff size={16} strokeWidth={2.2} className="mt-0.5 shrink-0 text-brand" />
+          サーバーに接続できないため、この端末に保存された記録を表示しています。未送信の記録は次に接続できたときに送信されます。
+        </p>
+      )}
+
       <p className="mt-6 text-[12px] leading-relaxed text-muted">
-        スタンプはこの端末のブラウザに保存されます。ブラウザのデータを削除したり、別の端末・ブラウザで開いたりすると引き継がれません。
+        {sync === "syncing"
+          ? "サーバーの記録を確認しています..."
+          : "スタンプはこの端末に保存され、サーバーにも記録されます。"}
       </p>
     </div>
   );
+}
+
+/** 画面を開いたときにサーバーの訪問記録を取得して端末の記録へマージする */
+function useServerSync(): SyncResult | "syncing" {
+  const [state, setState] = useState<SyncResult | "syncing">("syncing");
+
+  useEffect(() => {
+    const controller = new AbortController();
+    syncStampsFromServer(controller.signal)
+      .then(setState)
+      .catch(() => {
+        // アンマウント時の中断
+      });
+    return () => controller.abort();
+  }, []);
+
+  return state;
 }

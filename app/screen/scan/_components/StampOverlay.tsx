@@ -5,12 +5,14 @@ import { useEffect, useEffectEvent, useState } from "react";
 import { LuAward, LuCheck, LuTrophy, LuX } from "react-icons/lu";
 
 import { findStampSpot, type StampSpot, useStamps } from "@/lib/stamps";
+import { recordVisit } from "@/lib/visits";
 import { isArMarkerMessage } from "@/types/arMarker";
 
 /**
  * スキャン画面のスタンプ獲得演出。
  * ArScanner.html (iframe) から postMessage で届く markerFound を受け取り、
  * スタンプ対象のマーカーならスタンプを記録して獲得演出を表示する。
+ * スタンプは端末に即時保存し、visits API への記録は裏で送る (lib/visits.ts)。
  *   - 新規獲得     : スタンプが押される演出のカード (閉じるまで表示)
  *   - コンプリート : 上記に加えて紙吹雪とコンプリート表示
  *   - 獲得済み     : 小さなトーストを数秒だけ表示
@@ -36,6 +38,8 @@ export default function StampOverlay() {
       return;
     }
     if (collect(markerId)) {
+      // サーバーへの訪問記録は裏で送る (失敗時は端末に残して次回再送)
+      void recordVisit(markerId);
       const next = count + 1;
       setNotice({ kind: "acquired", spot, count: next, total, complete: next >= total });
     }
